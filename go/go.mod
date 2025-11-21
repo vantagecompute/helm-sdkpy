@@ -1,8 +1,6 @@
 module github.com/vantagecompute/helmpy
 
-go 1.24.0
-
-toolchain go1.24.10
+go 1.22
 
 require (
 	helm.sh/helm/v4 v4.0.0
