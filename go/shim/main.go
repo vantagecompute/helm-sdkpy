@@ -622,7 +622,9 @@ func helmpy_lint(handle C.helmpy_handle, chart_path *C.char, result_json **C.cha
 	cp := chartPath
 
 	// Check if it's a remote chart (OCI or HTTP)
-	if len(chartPath) > 6 && (chartPath[:6] == "oci://" || chartPath[:7] == "http://" || chartPath[:8] == "https://") {
+	if (len(chartPath) >= 6 && chartPath[:6] == "oci://") ||
+		(len(chartPath) >= 7 && chartPath[:7] == "http://") ||
+		(len(chartPath) >= 8 && chartPath[:8] == "https://") {
 		// Use ChartPathOptions to locate/download the chart
 		var pathOpts action.ChartPathOptions
 		pathOpts.RegistryClient = state.cfg.RegistryClient
