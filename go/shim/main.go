@@ -38,9 +38,9 @@ import (
 
 // Configuration state
 type configState struct {
-	cfg     *action.Configuration
-	envs    *cli.EnvSettings
-	mu      sync.Mutex
+	cfg  *action.Configuration
+	envs *cli.EnvSettings
+	mu   sync.Mutex
 }
 
 var (
@@ -122,7 +122,7 @@ func helmpy_config_create(namespace *C.char, kubeconfig *C.char, kubecontext *C.
 
 	// Create action configuration
 	cfg := new(action.Configuration)
-	
+
 	// Initialize the configuration with Kubernetes settings
 	err := cfg.Init(envs.RESTClientGetter(), envs.Namespace(), os.Getenv("HELM_DRIVER"))
 	if err != nil {
@@ -170,8 +170,19 @@ func helmpy_install(handle C.helmpy_handle, release_name *C.char, chart_path *C.
 	chartPath := C.GoString(chart_path)
 	valuesJSON := C.GoString(values_json)
 
-	// Load the chart
-	chart, err := loader.Load(chartPath)
+	// Create install action
+	client := action.NewInstall(state.cfg)
+	client.ReleaseName = releaseName
+	client.Namespace = state.envs.Namespace()
+
+	// Locate and load the chart (supports local, OCI, and HTTP)
+	cp, err := client.ChartPathOptions.LocateChart(chartPath, state.envs)
+	if err != nil {
+		return setError(fmt.Errorf("failed to locate chart: %w", err))
+	}
+
+	// Load the chart from the located path
+	chart, err := loader.Load(cp)
 	if err != nil {
 		return setError(fmt.Errorf("failed to load chart: %w", err))
 	}
@@ -183,11 +194,6 @@ func helmpy_install(handle C.helmpy_handle, release_name *C.char, chart_path *C.
 			return setError(fmt.Errorf("failed to parse values JSON: %w", err))
 		}
 	}
-
-	// Create install action
-	client := action.NewInstall(state.cfg)
-	client.ReleaseName = releaseName
-	client.Namespace = state.envs.Namespace()
 
 	// Run the install
 	rel, err := client.Run(chart, values)
@@ -221,8 +227,18 @@ func helmpy_upgrade(handle C.helmpy_handle, release_name *C.char, chart_path *C.
 	chartPath := C.GoString(chart_path)
 	valuesJSON := C.GoString(values_json)
 
-	// Load the chart
-	chart, err := loader.Load(chartPath)
+	// Create upgrade action
+	client := action.NewUpgrade(state.cfg)
+	client.Namespace = state.envs.Namespace()
+
+	// Locate and load the chart (supports local, OCI, and HTTP)
+	cp, err := client.ChartPathOptions.LocateChart(chartPath, state.envs)
+	if err != nil {
+		return setError(fmt.Errorf("failed to locate chart: %w", err))
+	}
+
+	// Load the chart from the located path
+	chart, err := loader.Load(cp)
 	if err != nil {
 		return setError(fmt.Errorf("failed to load chart: %w", err))
 	}
@@ -234,10 +250,6 @@ func helmpy_upgrade(handle C.helmpy_handle, release_name *C.char, chart_path *C.
 			return setError(fmt.Errorf("failed to parse values JSON: %w", err))
 		}
 	}
-
-	// Create upgrade action
-	client := action.NewUpgrade(state.cfg)
-	client.Namespace = state.envs.Namespace()
 
 	// Run the upgrade
 	rel, err := client.Run(releaseName, chart, values)
@@ -506,9 +518,16 @@ func helmpy_show_chart(handle C.helmpy_handle, chart_path *C.char, result_json *
 
 	// Create show action
 	client := action.NewShow(action.ShowChart, state.cfg)
+	client.ChartPathOptions.RegistryClient = state.cfg.RegistryClient
+
+	// Locate the chart (supports local, OCI, and HTTP)
+	cp, err := client.ChartPathOptions.LocateChart(chartPath, state.envs)
+	if err != nil {
+		return setError(fmt.Errorf("failed to locate chart: %w", err))
+	}
 
 	// Run the show
-	output, err := client.Run(chartPath)
+	output, err := client.Run(cp)
 	if err != nil {
 		return setError(fmt.Errorf("show chart failed: %w", err))
 	}
@@ -533,9 +552,16 @@ func helmpy_show_values(handle C.helmpy_handle, chart_path *C.char, result_json 
 
 	// Create show action
 	client := action.NewShow(action.ShowValues, state.cfg)
+	client.ChartPathOptions.RegistryClient = state.cfg.RegistryClient
+
+	// Locate the chart (supports local, OCI, and HTTP)
+	cp, err := client.ChartPathOptions.LocateChart(chartPath, state.envs)
+	if err != nil {
+		return setError(fmt.Errorf("failed to locate chart: %w", err))
+	}
 
 	// Run the show
-	output, err := client.Run(chartPath)
+	output, err := client.Run(cp)
 	if err != nil {
 		return setError(fmt.Errorf("show values failed: %w", err))
 	}
@@ -591,11 +617,26 @@ func helmpy_lint(handle C.helmpy_handle, chart_path *C.char, result_json **C.cha
 
 	chartPath := C.GoString(chart_path)
 
+	// For remote charts (OCI/HTTP), we need to locate them first
+	// For local charts, LocateChart will just return the path as-is
+	cp := chartPath
+
+	// Check if it's a remote chart (OCI or HTTP)
+	if len(chartPath) > 6 && (chartPath[:6] == "oci://" || chartPath[:7] == "http://" || chartPath[:8] == "https://") {
+		// Use ChartPathOptions to locate/download the chart
+		var pathOpts action.ChartPathOptions
+		pathOpts.RegistryClient = state.cfg.RegistryClient
+		cp, err = pathOpts.LocateChart(chartPath, state.envs)
+		if err != nil {
+			return setError(fmt.Errorf("failed to locate chart: %w", err))
+		}
+	}
+
 	// Create lint action
 	client := action.NewLint()
 
 	// Run the lint
-	result := client.Run([]string{chartPath}, map[string]interface{}{})
+	result := client.Run([]string{cp}, map[string]interface{}{})
 
 	// Serialize result
 	resultData, err := json.Marshal(result)
