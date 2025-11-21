@@ -32,10 +32,8 @@ import (
 	"unsafe"
 
 	"helm.sh/helm/v4/pkg/action"
-	"helm.sh/helm/v4/pkg/chart/loader"
+	"helm.sh/helm/v4/pkg/chart/v2/loader"
 	"helm.sh/helm/v4/pkg/cli"
-	"helm.sh/helm/v4/pkg/storage/driver"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 // Configuration state
@@ -126,10 +124,7 @@ func helmpy_config_create(namespace *C.char, kubeconfig *C.char, kubecontext *C.
 	cfg := new(action.Configuration)
 	
 	// Initialize the configuration with Kubernetes settings
-	err := cfg.Init(envs.RESTClientGetter(), envs.Namespace(), os.Getenv("HELM_DRIVER"), func(format string, v ...interface{}) {
-		// Log function - could be enhanced
-		fmt.Printf(format+"\n", v...)
-	})
+	err := cfg.Init(envs.RESTClientGetter(), envs.Namespace(), os.Getenv("HELM_DRIVER"))
 	if err != nil {
 		return setError(fmt.Errorf("failed to initialize helm config: %w", err))
 	}
@@ -480,7 +475,8 @@ func helmpy_pull(handle C.helmpy_handle, chart_ref *C.char, dest_dir *C.char) C.
 	destDir := C.GoString(dest_dir)
 
 	// Create pull action
-	client := action.NewPullWithOpts(action.WithConfig(state.cfg))
+	client := action.NewPull()
+	client.Settings = state.envs
 	if destDir != "" {
 		client.DestDir = destDir
 	}
@@ -509,7 +505,7 @@ func helmpy_show_chart(handle C.helmpy_handle, chart_path *C.char, result_json *
 	chartPath := C.GoString(chart_path)
 
 	// Create show action
-	client := action.NewShowWithConfig(action.ShowChart, state.cfg)
+	client := action.NewShow(action.ShowChart, state.cfg)
 
 	// Run the show
 	output, err := client.Run(chartPath)
@@ -536,7 +532,7 @@ func helmpy_show_values(handle C.helmpy_handle, chart_path *C.char, result_json 
 	chartPath := C.GoString(chart_path)
 
 	// Create show action
-	client := action.NewShowWithConfig(action.ShowValues, state.cfg)
+	client := action.NewShow(action.ShowValues, state.cfg)
 
 	// Run the show
 	output, err := client.Run(chartPath)
