@@ -27,6 +27,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"unsafe"
@@ -619,19 +620,12 @@ func helmpy_lint(handle C.helmpy_handle, chart_path *C.char, result_json **C.cha
 
 	// For remote charts (OCI/HTTP), we need to locate them first
 	// For local charts, LocateChart will just return the path as-is
-	cp := chartPath
+	var pathOpts action.ChartPathOptions
+	pathOpts.RegistryClient = state.cfg.RegistryClient
 
-	// Check if it's a remote chart (OCI or HTTP)
-	if (len(chartPath) >= 6 && chartPath[:6] == "oci://") ||
-		(len(chartPath) >= 7 && chartPath[:7] == "http://") ||
-		(len(chartPath) >= 8 && chartPath[:8] == "https://") {
-		// Use ChartPathOptions to locate/download the chart
-		var pathOpts action.ChartPathOptions
-		pathOpts.RegistryClient = state.cfg.RegistryClient
-		cp, err = pathOpts.LocateChart(chartPath, state.envs)
-		if err != nil {
-			return setError(fmt.Errorf("failed to locate chart: %w", err))
-		}
+	cp, err := pathOpts.LocateChart(chartPath, state.envs)
+	if err != nil {
+		return setError(fmt.Errorf("failed to locate chart: %w", err))
 	}
 
 	// Create lint action
