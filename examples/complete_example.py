@@ -83,7 +83,10 @@ def demo_install(config):
         }
         
         print(f"Installing chart: my-nginx")
-        print(f"Chart path: ./nginx-chart")
+        print(f"Chart path formats supported:")
+        print(f"  - Local path: ./nginx-chart")
+        print(f"  - OCI registry: oci://ghcr.io/nginxinc/charts/nginx-ingress")
+        print(f"  - HTTPS URL: https://charts.bitnami.com/bitnami/nginx-15.0.0.tgz")
         print(f"Values: {json.dumps(values, indent=2)}")
         
         # This would actually install the chart
@@ -100,6 +103,7 @@ def demo_install(config):
         
     except helmpy.InstallError as e:
         print(f"✗ Install error: {e}")
+
 
 
 def demo_list(config):
@@ -283,6 +287,66 @@ def demo_chart_operations(config):
         print(f"✗ Chart operation error: {e}")
 
 
+def demo_chart_path_formats(config):
+    """Demonstrate different chart path formats."""
+    print_section("Chart Path Formats")
+    
+    print("""
+helmpy supports three types of chart locations:
+
+1. Local Paths
+   - Chart directory: ./nginx-chart
+   - Absolute path: /path/to/mychart
+   - Packaged chart: ./mychart-1.0.0.tgz
+
+2. OCI Registries
+   - oci://ghcr.io/nginxinc/charts/nginx-ingress
+   - oci://registry.example.com/charts/myapp
+
+3. HTTP/HTTPS URLs
+   - https://charts.bitnami.com/bitnami/nginx-15.0.0.tgz
+   - https://example.com/charts/myapp-1.2.3.tgz
+
+Examples:
+    """)
+    
+    try:
+        install = helmpy.Install(config)
+        
+        # Example 1: Local path
+        print("\n   Example 1: Installing from local path")
+        # result = install.run(
+        #     release_name="local-nginx",
+        #     chart_path="./nginx-chart",
+        #     values={"replicaCount": 1}
+        # )
+        print("   ✓ install.run(release_name='local-nginx', chart_path='./nginx-chart')")
+        
+        # Example 2: OCI registry
+        print("\n   Example 2: Installing from OCI registry")
+        # result = install.run(
+        #     release_name="oci-nginx",
+        #     chart_path="oci://ghcr.io/nginxinc/charts/nginx-ingress",
+        #     values={"controller": {"service": {"type": "LoadBalancer"}}}
+        # )
+        print("   ✓ install.run(release_name='oci-nginx', chart_path='oci://ghcr.io/...')")
+        
+        # Example 3: HTTPS URL
+        print("\n   Example 3: Installing from HTTPS URL")
+        # result = install.run(
+        #     release_name="https-nginx",
+        #     chart_path="https://charts.bitnami.com/bitnami/nginx-15.0.0.tgz",
+        #     values={"replicaCount": 2}
+        # )
+        print("   ✓ install.run(release_name='https-nginx', chart_path='https://charts...')")
+        
+        print("\n   All chart path formats work with Install, Upgrade, Show, and Lint operations!")
+        
+    except helmpy.InstallError as e:
+        print(f"✗ Install error: {e}")
+
+
+
 def demo_uninstall(config):
     """Demonstrate uninstalling a release."""
     print_section("Uninstalling a Release")
@@ -358,6 +422,7 @@ Version: {helmpy.__version__}
     demo_rollback(config)
     demo_get_values(config)
     demo_history(config)
+    demo_chart_path_formats(config)
     demo_chart_operations(config)
     demo_uninstall(config)
     demo_context_manager(config)

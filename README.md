@@ -35,12 +35,28 @@ import helmpy
 # Create a configuration
 config = helmpy.Configuration(namespace="default")
 
-# Install a chart
+# Install a chart from a local path
 install = helmpy.Install(config)
 result = install.run(
     release_name="my-nginx",
     chart_path="./nginx-chart",
     values={"replicaCount": 3}
+)
+print(f"Installed: {result['name']}")
+
+# Install a chart from an OCI registry
+result = install.run(
+    release_name="my-app",
+    chart_path="oci://ghcr.io/nginxinc/charts/nginx-ingress",
+    values={"controller": {"service": {"type": "LoadBalancer"}}}
+)
+print(f"Installed: {result['name']}")
+
+# Install a chart from an HTTPS URL
+result = install.run(
+    release_name="my-release",
+    chart_path="https://charts.bitnami.com/bitnami/nginx-15.0.0.tgz",
+    values={"replicaCount": 2}
 )
 print(f"Installed: {result['name']}")
 
@@ -61,6 +77,32 @@ result = upgrade.run(
 # Uninstall a release
 uninstall = helmpy.Uninstall(config)
 result = uninstall.run("my-nginx")
+```
+
+## 📖 Chart Path Formats
+
+helmpy supports multiple chart location formats:
+
+### Local Paths
+Point to a chart directory or packaged chart (.tgz) on your local filesystem:
+```python
+chart_path="./nginx-chart"           # Local directory
+chart_path="/path/to/mychart"        # Absolute path
+chart_path="./mychart-1.0.0.tgz"     # Packaged chart
+```
+
+### OCI Registries
+Reference charts stored in OCI-compatible container registries:
+```python
+chart_path="oci://ghcr.io/nginxinc/charts/nginx-ingress"
+chart_path="oci://registry.example.com/charts/myapp"
+```
+
+### HTTP/HTTPS URLs
+Download charts directly from web servers:
+```python
+chart_path="https://charts.bitnami.com/bitnami/nginx-15.0.0.tgz"
+chart_path="https://example.com/charts/myapp-1.2.3.tgz"
 ```
 
 ## 📖 API Overview

@@ -83,7 +83,10 @@ class Show:
         """Show the chart's Chart.yaml content.
 
         Args:
-            chart_path: Path to the chart
+            chart_path: Path to the chart. Supports:
+                - Local paths: "./mychart" or "/path/to/chart"
+                - OCI registries: "oci://ghcr.io/org/chart"
+                - HTTP(S) URLs: "https://example.com/chart-1.0.0.tgz"
 
         Returns:
             Chart.yaml content as string
@@ -105,7 +108,10 @@ class Show:
         """Show the chart's values.yaml content.
 
         Args:
-            chart_path: Path to the chart
+            chart_path: Path to the chart. Supports:
+                - Local paths: "./mychart" or "/path/to/chart"
+                - OCI registries: "oci://ghcr.io/org/chart"
+                - HTTP(S) URLs: "https://example.com/chart-1.0.0.tgz"
 
         Returns:
             values.yaml content as string
@@ -191,7 +197,10 @@ class Lint:
         """Lint a chart.
 
         Args:
-            chart_path: Path to the chart
+            chart_path: Path to the chart. Supports:
+                - Local paths: "./mychart" or "/path/to/chart"
+                - OCI registries: "oci://ghcr.io/org/chart"
+                - HTTP(S) URLs: "https://example.com/chart-1.0.0.tgz"
 
         Returns:
             Dictionary containing lint results
@@ -236,7 +245,7 @@ class Package:
         """Package a chart.
 
         Args:
-            chart_path: Path to the chart
+            chart_path: Path to the chart directory to package
             dest_dir: Destination directory (default: current directory)
 
         Returns:

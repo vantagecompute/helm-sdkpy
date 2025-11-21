@@ -109,7 +109,10 @@ class Install:
 
         Args:
             release_name: Name of the release
-            chart_path: Path to the chart (directory or .tgz file)
+            chart_path: Path to the chart. Supports:
+                - Local paths: "./mychart" or "/path/to/chart"
+                - OCI registries: "oci://ghcr.io/org/chart"
+                - HTTP(S) URLs: "https://example.com/chart-1.0.0.tgz"
             values: Values to pass to the chart
 
         Returns:
@@ -168,7 +171,10 @@ class Upgrade:
 
         Args:
             release_name: Name of the release
-            chart_path: Path to the chart (directory or .tgz file)
+            chart_path: Path to the chart. Supports:
+                - Local paths: "./mychart" or "/path/to/chart"
+                - OCI registries: "oci://ghcr.io/org/chart"
+                - HTTP(S) URLs: "https://example.com/chart-1.0.0.tgz"
             values: Values to pass to the chart
 
         Returns:

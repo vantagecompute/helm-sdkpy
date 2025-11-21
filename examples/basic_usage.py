@@ -55,7 +55,7 @@ def main():
     # Create a configuration for the default namespace
     config = Configuration(namespace="default")
 
-    # Install a chart
+    # Install a chart from a local path
     install = Install(config)
     result = install.run(
         release_name="my-nginx",
@@ -63,6 +63,22 @@ def main():
         values={"replicaCount": 3}
     )
     print(f"Installed release: {result}")
+
+    # Install a chart from an OCI registry
+    result = install.run(
+        release_name="my-app",
+        chart_path="oci://ghcr.io/nginxinc/charts/nginx-ingress",
+        values={"controller": {"service": {"type": "LoadBalancer"}}}
+    )
+    print(f"Installed from OCI: {result}")
+
+    # Install a chart from an HTTPS URL
+    result = install.run(
+        release_name="my-release",
+        chart_path="https://charts.bitnami.com/bitnami/nginx-15.0.0.tgz",
+        values={"replicaCount": 2}
+    )
+    print(f"Installed from HTTPS: {result}")
 
     # List releases
     list_action = List(config)
