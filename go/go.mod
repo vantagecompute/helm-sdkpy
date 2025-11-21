@@ -1,11 +1,10 @@
 module github.com/vantagecompute/helmpy
 
-go 1.22
+go 1.24.0
 
-require (
-	helm.sh/helm/v4 v4.0.0
-	k8s.io/client-go v0.34.1
-)
+toolchain go1.24.10
+
+require helm.sh/helm/v4 v4.0.0
 
 require (
 	dario.cat/mergo v1.0.1 // indirect
@@ -106,6 +105,7 @@ require (
 	k8s.io/apimachinery v0.34.1 // indirect
 	k8s.io/apiserver v0.34.1 // indirect
 	k8s.io/cli-runtime v0.34.1 // indirect
+	k8s.io/client-go v0.34.1 // indirect
 	k8s.io/component-base v0.34.1 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250710124328-f3f2b991d03b // indirect
