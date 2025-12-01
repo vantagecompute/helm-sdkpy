@@ -4,14 +4,14 @@ sidebar_position: 3
 
 # Usage Guide
 
-Comprehensive guide to using helmpy for Helm operations.
+Comprehensive guide to using helm-sdkpy for Helm operations.
 
 ## Configuration
 
 All Helm operations require a `Configuration` object that manages the connection to your Kubernetes cluster.
 
 ```python
-from helmpy import Configuration
+from helm_sdkpy import Configuration
 
 # Basic configuration
 config = Configuration(namespace="default")
@@ -32,7 +32,7 @@ Install charts from various sources:
 
 ```python
 import asyncio
-from helmpy import Configuration, Install
+from helm_sdkpy import Configuration, Install
 
 async def install_examples():
     config = Configuration(namespace="default")
@@ -79,7 +79,7 @@ asyncio.run(install_examples())
 ### Upgrading Releases
 
 ```python
-from helmpy import Configuration, Upgrade
+from helm_sdkpy import Configuration, Upgrade
 
 async def upgrade_release():
     config = Configuration(namespace="default")
@@ -100,7 +100,7 @@ asyncio.run(upgrade_release())
 ### Listing Releases
 
 ```python
-from helmpy.actions import List
+from helm_sdkpy.actions import List
 
 async def list_releases():
     config = Configuration(namespace="default")
@@ -121,7 +121,7 @@ asyncio.run(list_releases())
 ### Checking Status
 
 ```python
-from helmpy.actions import Status
+from helm_sdkpy.actions import Status
 
 async def check_status():
     config = Configuration(namespace="default")
@@ -140,7 +140,7 @@ asyncio.run(check_status())
 ### Rolling Back
 
 ```python
-from helmpy.actions import Rollback
+from helm_sdkpy.actions import Rollback
 
 async def rollback_release():
     config = Configuration(namespace="default")
@@ -164,7 +164,7 @@ asyncio.run(rollback_release())
 ### Getting Values
 
 ```python
-from helmpy.actions import GetValues
+from helm_sdkpy.actions import GetValues
 
 async def get_values():
     config = Configuration(namespace="default")
@@ -185,7 +185,7 @@ asyncio.run(get_values())
 ### Viewing History
 
 ```python
-from helmpy.actions import History
+from helm_sdkpy.actions import History
 
 async def view_history():
     config = Configuration(namespace="default")
@@ -202,7 +202,7 @@ asyncio.run(view_history())
 ### Uninstalling
 
 ```python
-from helmpy import Configuration, Uninstall
+from helm_sdkpy import Configuration, Uninstall
 
 async def uninstall_release():
     config = Configuration(namespace="default")
@@ -224,7 +224,7 @@ asyncio.run(uninstall_release())
 ### Pulling Charts
 
 ```python
-from helmpy.chart import Pull
+from helm_sdkpy.chart import Pull
 
 async def pull_chart():
     config = Configuration()
@@ -241,7 +241,7 @@ asyncio.run(pull_chart())
 ### Showing Chart Info
 
 ```python
-from helmpy.chart import Show
+from helm_sdkpy.chart import Show
 
 async def show_chart():
     config = Configuration()
@@ -259,7 +259,7 @@ asyncio.run(show_chart())
 ### Testing Charts
 
 ```python
-from helmpy.chart import Test
+from helm_sdkpy.chart import Test
 
 async def test_chart():
     config = Configuration(namespace="default")
@@ -274,7 +274,7 @@ asyncio.run(test_chart())
 ### Linting Charts
 
 ```python
-from helmpy.chart import Lint
+from helm_sdkpy.chart import Lint
 
 async def lint_chart():
     config = Configuration()
@@ -289,7 +289,7 @@ asyncio.run(lint_chart())
 ### Packaging Charts
 
 ```python
-from helmpy.chart import Package
+from helm_sdkpy.chart import Package
 
 async def package_chart():
     config = Configuration()
@@ -310,7 +310,7 @@ asyncio.run(package_chart())
 ### Adding Repositories
 
 ```python
-from helmpy.repo import RepoAdd
+from helm_sdkpy.repo import RepoAdd
 
 async def add_repository():
     config = Configuration()
@@ -336,7 +336,7 @@ asyncio.run(add_repository())
 ### Updating Repositories
 
 ```python
-from helmpy.repo import RepoUpdate
+from helm_sdkpy.repo import RepoUpdate
 
 async def update_repos():
     config = Configuration()
@@ -354,7 +354,7 @@ asyncio.run(update_repos())
 ### Listing Repositories
 
 ```python
-from helmpy.repo import RepoList
+from helm_sdkpy.repo import RepoList
 
 async def list_repos():
     config = Configuration()
@@ -371,7 +371,7 @@ asyncio.run(list_repos())
 ### Removing Repositories
 
 ```python
-from helmpy.repo import RepoRemove
+from helm_sdkpy.repo import RepoRemove
 
 async def remove_repo():
     config = Configuration()
@@ -385,8 +385,8 @@ asyncio.run(remove_repo())
 ## Error Handling
 
 ```python
-from helmpy import Configuration, Install
-from helmpy.exceptions import HelmError, InstallError
+from helm_sdkpy import Configuration, Install
+from helm_sdkpy.exceptions import HelmError, InstallError
 
 async def safe_install():
     config = Configuration(namespace="default")
@@ -413,7 +413,7 @@ Execute multiple Helm operations in parallel:
 
 ```python
 import asyncio
-from helmpy import Configuration, Install
+from helm_sdkpy import Configuration, Install
 
 async def install_multiple_charts():
     config = Configuration(namespace="default")
@@ -440,4 +440,4 @@ asyncio.run(install_multiple_charts())
 
 - [API Reference](api/actions) - Complete API documentation
 - [Examples](examples/chart-install) - More practical examples
-- [Architecture](architecture/helmpy-architecture) - Understanding helmpy internals
+- [Architecture](architecture/helm-sdkpy-architecture) - Understanding helm-sdkpy internals

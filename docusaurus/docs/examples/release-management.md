@@ -11,7 +11,7 @@ Learn how to manage Helm releases: status checks, history, rollbacks, and uninst
 Get the current status of a release:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(name="nginx")
 
@@ -25,7 +25,7 @@ print(f"Status: {status}")
 List releases in a namespace:
 
 ```python
-from helmpy.actions import List
+from helm_sdkpy.actions import List
 
 # List all releases in namespace
 lister = List()
@@ -43,7 +43,7 @@ for release in releases:
 ## List All Releases (All Namespaces)
 
 ```python
-from helmpy.actions import List
+from helm_sdkpy.actions import List
 
 lister = List()
 releases = lister.run(all_namespaces=True)
@@ -57,7 +57,7 @@ for release in releases:
 Filter by status or name:
 
 ```python
-from helmpy.actions import List
+from helm_sdkpy.actions import List
 
 lister = List()
 
@@ -79,7 +79,7 @@ webapps = lister.run(
 View revision history:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(name="webapp")
 
@@ -100,7 +100,7 @@ for revision in history:
 Retrieve deployed values:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(name="webapp")
 
@@ -115,7 +115,7 @@ print(f"Image: {values.get('image', {}).get('tag')}")
 ## Get User-Supplied Values Only
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(name="webapp")
 
@@ -133,7 +133,7 @@ print("User-supplied values:", user_values)
 Rollback to a previous revision:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(name="webapp")
 
@@ -149,7 +149,7 @@ print(f"Rolled back: {result}")
 ## Rollback to Specific Revision
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(name="webapp")
 
@@ -173,7 +173,7 @@ result = chart.rollback(
 Remove a release:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(name="nginx")
 
@@ -185,7 +185,7 @@ print(f"Uninstalled: {result}")
 ## Uninstall with Cleanup
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(name="webapp")
 
@@ -202,7 +202,7 @@ result = chart.uninstall(
 Uninstall but keep release history:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(name="webapp")
 
@@ -218,9 +218,9 @@ result = chart.uninstall(
 Full workflow with status checks and operations:
 
 ```python
-from helmpy import Chart
-from helmpy.actions import List
-from helmpy.exceptions import HelmError
+from helm_sdkpy import Chart
+from helm_sdkpy.actions import List
+from helm_sdkpy.exceptions import HelmError
 import sys
 
 def manage_release(release_name: str, namespace: str):
@@ -381,8 +381,8 @@ Concurrent release management:
 
 ```python
 import asyncio
-from helmpy import Chart
-from helmpy.actions import List
+from helm_sdkpy import Chart
+from helm_sdkpy.actions import List
 
 async def check_release_status(name: str, namespace: str):
     """Check status of a release."""
@@ -421,8 +421,8 @@ Periodic status checks:
 
 ```python
 import asyncio
-from helmpy import Chart
-from helmpy.exceptions import HelmError
+from helm_sdkpy import Chart
+from helm_sdkpy.exceptions import HelmError
 
 async def monitor_release(name: str, namespace: str, interval: int = 30):
     """Monitor release status periodically."""
@@ -487,8 +487,8 @@ asyncio.run(main())
 ## Error Handling
 
 ```python
-from helmpy import Chart
-from helmpy.exceptions import HelmError, NotFoundError
+from helm_sdkpy import Chart
+from helm_sdkpy.exceptions import HelmError, NotFoundError
 
 chart = Chart(name="webapp")
 

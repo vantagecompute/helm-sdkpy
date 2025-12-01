@@ -1,8 +1,8 @@
-# helmpy Implementation Summary
+# helm-sdkpy Implementation Summary
 
 ## Project Overview
 
-**helmpy** is a complete Python wrapper for the Helm v4 Go API, providing full access to Helm's functionality from Python applications. Following the architecture pattern of dqlitepy, it creates a self-contained package with no system dependencies.
+**helm-sdkpy** is a complete Python wrapper for the Helm v4 Go API, providing full access to Helm's functionality from Python applications. Following the architecture pattern of dqlitepy, it creates a self-contained package with no system dependencies.
 
 ## Implementation Status: ✅ COMPLETE
 
@@ -20,7 +20,7 @@ All requirements from the problem statement have been fulfilled:
 └────────────────────────────────────────────────────────┘
                          ↓
 ┌────────────────────────────────────────────────────────┐
-│      helmpy Python Package (Async-First, Type-Safe)     │
+│      helm-sdkpy Python Package (Async-First, Type-Safe)     │
 │  ┌──────────────────────────────────────────────────┐  │
 │  │ actions.py: async Install, Upgrade, Uninstall    │  │
 │  │ chart.py: async Pull, Show, Lint, Package, Test │  │
@@ -81,7 +81,7 @@ All operations use Python's `async/await` syntax for non-blocking execution and 
 ## Project Structure
 
 ```
-helmpy/
+helm_sdkpy/
 ├── .gitignore                    # Build artifacts exclusion
 ├── .python-version               # Python 3.12 specification
 ├── LICENSE                       # Apache 2.0 license
@@ -97,7 +97,7 @@ helmpy/
 │   └── shim/
 │       └── main.go               # C FFI implementation (700+ lines)
 │
-├── helmpy/                       # Python package
+├── helm_sdkpy/                       # Python package
 │   ├── __init__.py               # Package exports
 │   ├── _ffi.py                   # CFFI bindings (220 lines)
 │   ├── exceptions.py             # 10 exception types (70 lines)
@@ -186,14 +186,14 @@ just fmt         # Format code
 
 ```python
 import asyncio
-import helmpy
+import helm-sdkpy
 
 async def main():
     # Create configuration
-    config = helmpy.Configuration(namespace="default")
+    config = helm-sdkpy.Configuration(namespace="default")
 
     # Install chart (async)
-    install = helmpy.Install(config)
+    install = helm-sdkpy.Install(config)
     result = await install.run(
         release_name="my-nginx",
         chart_path="./nginx-chart",
@@ -203,17 +203,17 @@ async def main():
     )
 
     # List releases (async)
-    releases = await helmpy.List(config).run(all=True)
+    releases = await helm-sdkpy.List(config).run(all=True)
 
     # Upgrade (async)
-    upgrade = helmpy.Upgrade(config)
+    upgrade = helm-sdkpy.Upgrade(config)
     await upgrade.run("my-nginx", "./nginx-chart", {"replicaCount": 5})
 
     # Rollback (async)
-    await helmpy.Rollback(config).run("my-nginx", revision=1)
+    await helm-sdkpy.Rollback(config).run("my-nginx", revision=1)
 
     # Uninstall (async)
-    await helmpy.Uninstall(config).run("my-nginx", wait=True)
+    await helm-sdkpy.Uninstall(config).run("my-nginx", wait=True)
 
 asyncio.run(main())
 ```
@@ -222,11 +222,11 @@ asyncio.run(main())
 
 ```python
 import asyncio
-import helmpy
+import helm-sdkpy
 
 async def deploy_multiple():
-    config = helmpy.Configuration(namespace="default")
-    install = helmpy.Install(config)
+    config = helm-sdkpy.Configuration(namespace="default")
+    install = helm-sdkpy.Install(config)
     
     # Install multiple charts concurrently
     results = await asyncio.gather(
@@ -325,9 +325,9 @@ just build-lib
 pip install .
 
 # Or use directly
-python -c "import helmpy; print(helmpy.__version__)"
+python -c "import helm-sdkpy; print(helm-sdkpy.__version__)"
 ```
 
 ## Conclusion
 
-The helmpy implementation is **complete and production-ready**, providing a comprehensive, type-safe, async-first, and self-contained Python wrapper for the entire Helm v4 Go API. All 19 actions use Python's async/await syntax for non-blocking execution and support concurrent operations with asyncio.gather(), making it ideal for modern Python applications, web frameworks, and event-driven architectures. The implementation follows the exact pattern demonstrated in dqlitepy.
+The helm-sdkpy implementation is **complete and production-ready**, providing a comprehensive, type-safe, async-first, and self-contained Python wrapper for the entire Helm v4 Go API. All 19 actions use Python's async/await syntax for non-blocking execution and support concurrent operations with asyncio.gather(), making it ideal for modern Python applications, web frameworks, and event-driven architectures. The implementation follows the exact pattern demonstrated in dqlitepy.

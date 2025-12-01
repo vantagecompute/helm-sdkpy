@@ -4,14 +4,14 @@ sidebar_position: 4
 
 # Repository Management
 
-Learn how to manage Helm repositories with helmpy.
+Learn how to manage Helm repositories with helm-sdkpy.
 
 ## Add Repository
 
 Add a Helm chart repository:
 
 ```python
-from helmpy.repo import Repo
+from helm_sdkpy.repo import Repo
 
 repo = Repo()
 
@@ -29,7 +29,7 @@ print(f"Added repository: {result}")
 Add a private repository with credentials:
 
 ```python
-from helmpy.repo import Repo
+from helm_sdkpy.repo import Repo
 
 repo = Repo()
 
@@ -46,7 +46,7 @@ result = repo.add(
 Update repository indexes to get latest charts:
 
 ```python
-from helmpy.repo import Repo
+from helm_sdkpy.repo import Repo
 
 repo = Repo()
 
@@ -60,7 +60,7 @@ print(f"Updated repositories: {result}")
 List all configured repositories:
 
 ```python
-from helmpy.repo import Repo
+from helm_sdkpy.repo import Repo
 
 repo = Repo()
 
@@ -78,7 +78,7 @@ for r in repositories:
 Remove a repository:
 
 ```python
-from helmpy.repo import Repo
+from helm_sdkpy.repo import Repo
 
 repo = Repo()
 
@@ -92,8 +92,8 @@ print(f"Removed repository: {result}")
 Set up multiple repositories:
 
 ```python
-from helmpy.repo import Repo
-from helmpy.exceptions import HelmError
+from helm_sdkpy.repo import Repo
+from helm_sdkpy.exceptions import HelmError
 
 def setup_repositories():
     """Set up standard Helm repositories."""
@@ -150,8 +150,8 @@ if __name__ == "__main__":
 After adding repositories, search for charts:
 
 ```python
-from helmpy.repo import Repo
-from helmpy.actions import Show
+from helm_sdkpy.repo import Repo
+from helm_sdkpy.actions import Show
 
 # Setup repository
 repo = Repo()
@@ -173,7 +173,7 @@ print(f"Chart info: {chart_info}")
 Add repository with custom certificate authority:
 
 ```python
-from helmpy.repo import Repo
+from helm_sdkpy.repo import Repo
 
 repo = Repo()
 
@@ -189,7 +189,7 @@ result = repo.add(
 Add repository with mutual TLS:
 
 ```python
-from helmpy.repo import Repo
+from helm_sdkpy.repo import Repo
 
 repo = Repo()
 
@@ -207,9 +207,9 @@ result = repo.add(
 Complete repository management workflow:
 
 ```python
-from helmpy.repo import Repo
-from helmpy import Chart
-from helmpy.exceptions import HelmError
+from helm_sdkpy.repo import Repo
+from helm_sdkpy import Chart
+from helm_sdkpy.exceptions import HelmError
 import sys
 
 def manage_repositories():
@@ -296,7 +296,7 @@ Concurrent repository management:
 
 ```python
 import asyncio
-from helmpy.repo import Repo
+from helm_sdkpy.repo import Repo
 
 async def add_repository(name: str, url: str):
     """Add repository asynchronously."""
@@ -332,9 +332,9 @@ asyncio.run(setup_repos())
 Clean up unused repositories:
 
 ```python
-from helmpy.repo import Repo
-from helmpy.actions import List
-from helmpy.exceptions import HelmError
+from helm_sdkpy.repo import Repo
+from helm_sdkpy.actions import List
+from helm_sdkpy.exceptions import HelmError
 
 def cleanup_repositories():
     """Remove repositories not used by any release."""
@@ -426,8 +426,8 @@ if __name__ == "__main__":
 ## Error Handling
 
 ```python
-from helmpy.repo import Repo
-from helmpy.exceptions import HelmError, RepoError
+from helm_sdkpy.repo import Repo
+from helm_sdkpy.exceptions import HelmError, RepoError
 
 repo = Repo()
 

@@ -1,5 +1,5 @@
 [project]
-name = "helmpy"
+name = "helm-sdkpy"
 version = "0.0.1"
 description = "Python bindings for Helm - The Kubernetes Package Manager"
 readme = "README.md"
@@ -53,24 +53,24 @@ dev = [
 
 
 [tool.hatch.build.targets.wheel]
-packages = ["helmpy"]
+packages = ["helm_sdkpy"]
 # Include binary artifacts (shared libraries)
 artifacts = [
-    "helmpy/_lib/**/*",
+    "helm_sdkpy/_lib/**/*",
 ]
 
 # Source distribution - mirror wheel contents plus build requirements
 [tool.hatch.build.targets.sdist]
-# Only include helmpy package (same as wheel) plus essential build files
+# Only include helm_sdkpy package (same as wheel) plus essential build files
 only-include = [
-    "helmpy",
+    "helm_sdkpy",
     "pyproject.toml",
     "README.md", 
     "LICENSE",
 ]
 # Include binary files in sdist
 artifacts = [
-    "helmpy/_lib/**/*",
+    "helm_sdkpy/_lib/**/*",
 ]
 
 [tool.hatch.metadata]
@@ -78,7 +78,7 @@ allow-direct-references = true
 
 # Pyright configuration
 [tool.pyright]
-include = ["helmpy", "tests"]
+include = ["helm_sdkpy", "tests"]
 exclude = ["examples", "build", "vendor"]
 pythonVersion = "3.12"
 
@@ -101,7 +101,7 @@ ignore = [
 ]
 
 [tool.coverage.run]
-source = ["helmpy"]
+source = ["helm_sdkpy"]
 omit = ["*/tests/*", "*/test_*.py"]
 
 [tool.coverage.report]

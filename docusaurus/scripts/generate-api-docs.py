@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
-"""Generate API documentation from helmpy docstrings."""
+"""Generate API documentation from helm-sdkpy docstrings."""
 
 import inspect
 import json
 import sys
 from pathlib import Path
 
-# Add helmpy to path
+# Add helm_sdkpy to path
 repo_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(repo_root))
 
 # Import after adding to path
-from helmpy import Configuration  # noqa: E402
-from helmpy.actions import Install, Upgrade, Uninstall, List, Status, Rollback, GetValues, History  # noqa: E402
-from helmpy.chart import Pull, Show, Test, Lint, Package  # noqa: E402
-from helmpy.repo import RepoAdd, RepoRemove, RepoList, RepoUpdate  # noqa: E402
-from helmpy import exceptions  # noqa: E402
+from helm_sdkpy import Configuration  # noqa: E402
+from helm_sdkpy.actions import Install, Upgrade, Uninstall, List, Status, Rollback, GetValues, History  # noqa: E402
+from helm_sdkpy.chart import Pull, Show, Test, Lint, Package  # noqa: E402
+from helm_sdkpy.repo import RepoAdd, RepoRemove, RepoList, RepoUpdate  # noqa: E402
+from helm_sdkpy import exceptions  # noqa: E402
 
 
 def get_signature(obj):
@@ -265,8 +265,8 @@ def main():
         "position": 4,
         "link": {
             "type": "generated-index",
-            "title": "helmpy API Reference",
-            "description": "Complete API documentation for helmpy",
+            "title": "helm-sdkpy API Reference",
+            "description": "Complete API documentation for helm-sdkpy",
             "slug": "/api",
         },
     }

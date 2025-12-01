@@ -26,15 +26,15 @@ function getVersionFromPyproject(): string {
 const projectVersion = getVersionFromPyproject();
 
 const config: Config = {
-  title: 'helmpy',
+  title: 'helm-sdkpy',
   tagline: `Python bindings for Helm - v${projectVersion}`,
   favicon: 'img/favicon.ico',
 
   url: 'https://vantagecompute.github.io',
-  baseUrl: '/helmpy/',
+  baseUrl: '/helm-sdkpy/',
 
   organizationName: 'vantagecompute',
-  projectName: 'helmpy',
+  projectName: 'helm-sdkpy',
   deploymentBranch: 'main',
   trailingSlash: false,
 
@@ -60,7 +60,7 @@ const config: Config = {
           path: './docs',
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/vantagecompute/helmpy/tree/main/docusaurus/docs/',
+          editUrl: 'https://github.com/vantagecompute/helm-sdkpy/tree/main/docusaurus/docs/',
           sidebarCollapsible: true,
           sidebarCollapsed: false,
         },
@@ -80,7 +80,7 @@ const config: Config = {
         generateLLMsFullTxt: true,
         docsDir: 'docs',
         ignoreFiles: ['advanced/*', 'private/*'],
-        title: 'helmpy Documentation',
+        title: 'helm-sdkpy Documentation',
         description: 'Python bindings for Helm - Kubernetes package manager',
         includeBlog: false,
         // Content cleaning options
@@ -104,57 +104,57 @@ const config: Config = {
               filename: 'llms-index.txt',
               includePatterns: ['docs/index.md'],
               fullContent: true,
-              title: 'helmpy Documentation Index',
-              description: 'Index reference for helmpy'
+              title: 'helm-sdkpy Documentation Index',
+              description: 'Index reference for helm-sdkpy'
             },
             {
               filename: 'llms-installation.txt',
               includePatterns: ['docs/installation.md'],
               fullContent: true,
-              title: 'helmpy Installation Guide',
-              description: 'Installation documentation for helmpy'
+              title: 'helm-sdkpy Installation Guide',
+              description: 'Installation documentation for helm-sdkpy'
             },
             {
               filename: 'llms-quickstart.txt',
               includePatterns: ['docs/quickstart.md'],
               fullContent: true,
-              title: 'helmpy Quick Start Guide',
-              description: 'Quick start guide to get up and running with helmpy'
+              title: 'helm-sdkpy Quick Start Guide',
+              description: 'Quick start guide to get up and running with helm-sdkpy'
             },
             {
               filename: 'llms-usage.txt',
               includePatterns: ['docs/usage.md'],
               fullContent: true,
-              title: 'helmpy Usage Documentation',
-              description: 'Usage documentation and examples for helmpy'
+              title: 'helm-sdkpy Usage Documentation',
+              description: 'Usage documentation and examples for helm-sdkpy'
             },
             {
               filename: 'llms-architecture.txt',
               includePatterns: ['docs/architecture/**/*.md'],
               fullContent: true,
-              title: 'helmpy Architecture Documentation',
-              description: 'Complete architecture documentation for helmpy including core architecture and build/packaging'
+              title: 'helm-sdkpy Architecture Documentation',
+              description: 'Complete architecture documentation for helm-sdkpy including core architecture and build/packaging'
             },
             {
               filename: 'llms-examples.txt',
               includePatterns: ['docs/examples/**/*.md'],
               fullContent: true,
-              title: 'helmpy Examples',
-              description: 'Practical examples for helmpy including chart installation, upgrades, release management, repository management, concurrent operations, and error handling'
+              title: 'helm-sdkpy Examples',
+              description: 'Practical examples for helm-sdkpy including chart installation, upgrades, release management, repository management, concurrent operations, and error handling'
             },
             {
               filename: 'llms-api-reference.txt',
               includePatterns: ['docs/api/**/*.md'],
               fullContent: true,
-              title: 'helmpy API Reference',
-              description: 'Complete API reference for helmpy actions, chart, repo, and exceptions'
+              title: 'helm-sdkpy API Reference',
+              description: 'Complete API reference for helm-sdkpy actions, chart, repo, and exceptions'
             },
             {
               filename: 'llms-troubleshooting.txt',
               includePatterns: ['docs/troubleshooting.md'],
               fullContent: true,
-              title: 'helmpy Troubleshooting',
-              description: 'Troubleshooting documentation for helmpy'
+              title: 'helm-sdkpy Troubleshooting',
+              description: 'Troubleshooting documentation for helm-sdkpy'
             },
           ],
         },
@@ -167,23 +167,23 @@ const config: Config = {
 
   themeConfig: {
     navbar: {
-      title: `helmpy Documentation v${projectVersion}`,
+      title: `helm-sdkpy Documentation v${projectVersion}`,
       logo: {
         alt: 'Vantage Compute Logo',
         src: 'https://vantage-compute-public-assets.s3.us-east-1.amazonaws.com/branding/vantage-logo-text-white-horz.png',
         srcDark: 'https://vantage-compute-public-assets.s3.us-east-1.amazonaws.com/branding/vantage-logo-text-white-horz.png',
-        href: 'https://vantagecompute.github.io/helmpy/',
+        href: 'https://vantagecompute.github.io/helm-sdkpy/',
         target: '_self',
       },
       items: [
         {
-          href: 'https://pypi.org/project/helmpy/',
+          href: 'https://pypi.org/project/helm-sdkpy/',
           label: 'PyPI',
           position: 'right',
           className: 'pypi-button',
         },
         {
-          href: 'https://github.com/vantagecompute/helmpy',
+          href: 'https://github.com/vantagecompute/helm-sdkpy',
           label: 'GitHub',
           position: 'right',
           className: 'github-button',
@@ -216,11 +216,11 @@ const config: Config = {
           items: [
             {
               label: 'GitHub Discussions',
-              href: 'https://github.com/vantagecompute/helmpy/discussions',
+              href: 'https://github.com/vantagecompute/helm-sdkpy/discussions',
             },
             {
               label: 'Issues',
-              href: 'https://github.com/vantagecompute/helmpy/issues',
+              href: 'https://github.com/vantagecompute/helm-sdkpy/issues',
             },
             {
               label: 'Support',
@@ -233,7 +233,7 @@ const config: Config = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/vantagecompute/helmpy',
+              href: 'https://github.com/vantagecompute/helm-sdkpy',
             },
             {
               label: 'Vantage Compute',
@@ -241,7 +241,7 @@ const config: Config = {
             },
             {
               label: 'PyPI',
-              href: 'https://pypi.org/project/helmpy/',
+              href: 'https://pypi.org/project/helm-sdkpy/',
             },
           ],
         },

@@ -1,12 +1,12 @@
 uv := require("uv")
 
 project_dir := justfile_directory()
-src_dir := project_dir / "helmpy"
+src_dir := project_dir / "helm_sdkpy"
 tests_dir := project_dir / "tests"
 
 export PY_COLORS := "1"
 export PYTHONBREAKPOINT := "pdb.set_trace"
-export PYTHONPATH := project_dir / "helmpy"
+export PYTHONPATH := project_dir / "helm_sdkpy"
 
 uv_run := "uv run --frozen"
 
@@ -52,19 +52,19 @@ build-lib:
     #!/usr/bin/env bash
     set -e
     echo "==> Building native library using Docker"
-    docker build --target go-build --tag helmpy-lib-builder .
-    docker create --name helmpy-lib-extract helmpy-lib-builder
-    docker cp helmpy-lib-extract:/build/helmpy/_lib/. ./helmpy/_lib/
-    docker rm helmpy-lib-extract
-    echo "==> Library extracted to helmpy/_lib/"
-    ls -lh helmpy/_lib/linux-amd64/
+    docker build --target go-build --tag helm-sdkpy-lib-builder .
+    docker create --name helm-sdkpy-lib-extract helm-sdkpy-lib-builder
+    docker cp helm-sdkpy-lib-extract:/build/helm_sdkpy/_lib/. ./helm_sdkpy/_lib/
+    docker rm helm-sdkpy-lib-extract
+    echo "==> Library extracted to helm_sdkpy/_lib/"
+    ls -lh helm_sdkpy/_lib/linux-amd64/
 
 # Run unit tests with coverage
 [group("test")]
 unit: lock build-lib
     {{uv_run}} pytest {{tests_dir}} --cov={{src_dir}} --cov-report=term-missing
 
-# Build helmpy wheel using Docker
+# Build helm-sdkpy wheel using Docker
 build-wheel:
     ./scripts/build_wheel_docker.sh
 
@@ -90,7 +90,7 @@ docs-dev-port port="3000": docs-install
 [group("docusaurus")]
 docs-build: docs-install
     @echo "🏗️ Generating API documentation from source..."
-    {{uv_run}} python3 ./docusaurus/scripts/generate-api-docs.py
+    uv run python3 ./docusaurus/scripts/generate-api-docs.py
     @echo "🏗️ Building Docusaurus for production..."
     cd docusaurus && yarn build
 

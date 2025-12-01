@@ -58,7 +58,7 @@ class Pull:
             ref_cstr = ffi.new("char[]", chart_ref.encode("utf-8"))
             dest_cstr = ffi.new("char[]", dest_dir.encode("utf-8")) if dest_dir else ffi.NULL
 
-            result = self._lib.helmpy_pull(self.config._handle_value, ref_cstr, dest_cstr)
+            result = self._lib.helm_sdkpy_pull(self.config._handle_value, ref_cstr, dest_cstr)
 
             if result != 0:
                 check_error(result)
@@ -106,7 +106,7 @@ class Show:
             result_json = ffi.new("char **")
             path_cstr = ffi.new("char[]", chart_path.encode("utf-8"))
 
-            result = self._lib.helmpy_show_chart(self.config._handle_value, path_cstr, result_json)
+            result = self._lib.helm_sdkpy_show_chart(self.config._handle_value, path_cstr, result_json)
 
             if result != 0:
                 check_error(result)
@@ -135,7 +135,7 @@ class Show:
             result_json = ffi.new("char **")
             path_cstr = ffi.new("char[]", chart_path.encode("utf-8"))
 
-            result = self._lib.helmpy_show_values(self.config._handle_value, path_cstr, result_json)
+            result = self._lib.helm_sdkpy_show_values(self.config._handle_value, path_cstr, result_json)
 
             if result != 0:
                 check_error(result)
@@ -181,7 +181,7 @@ class Test:
             result_json = ffi.new("char **")
             name_cstr = ffi.new("char[]", release_name.encode("utf-8"))
 
-            result = self._lib.helmpy_test(self.config._handle_value, name_cstr, result_json)
+            result = self._lib.helm_sdkpy_test(self.config._handle_value, name_cstr, result_json)
 
             if result != 0:
                 check_error(result)
@@ -234,7 +234,7 @@ class Lint:
             result_json = ffi.new("char **")
             path_cstr = ffi.new("char[]", chart_path.encode("utf-8"))
 
-            result = self._lib.helmpy_lint(self.config._handle_value, path_cstr, result_json)
+            result = self._lib.helm_sdkpy_lint(self.config._handle_value, path_cstr, result_json)
 
             if result != 0:
                 check_error(result)
@@ -286,7 +286,7 @@ class Package:
             path_cstr = ffi.new("char[]", chart_path.encode("utf-8"))
             dest_cstr = ffi.new("char[]", dest_dir.encode("utf-8")) if dest_dir else ffi.NULL
 
-            result = self._lib.helmpy_package(
+            result = self._lib.helm_sdkpy_package(
                 self.config._handle_value, path_cstr, dest_cstr, result_path
             )
 

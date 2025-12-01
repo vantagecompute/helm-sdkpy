@@ -12,7 +12,7 @@ Perform asynchronous chart installation:
 
 ```python
 import asyncio
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 async def install_chart():
     chart = Chart(
@@ -40,7 +40,7 @@ Deploy multiple applications simultaneously:
 
 ```python
 import asyncio
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 async def install_chart(name: str, chart_name: str, repo: str, namespace: str):
     """Install a single chart."""
@@ -86,7 +86,7 @@ Upgrade multiple releases simultaneously:
 
 ```python
 import asyncio
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 async def upgrade_chart(name: str, chart_name: str, repo: str, version: str):
     """Upgrade a single chart."""
@@ -142,8 +142,8 @@ Check status of multiple releases:
 
 ```python
 import asyncio
-from helmpy import Chart
-from helmpy.actions import List
+from helm_sdkpy import Chart
+from helm_sdkpy.actions import List
 
 async def check_status(name: str, namespace: str):
     """Check status of a single release."""
@@ -186,8 +186,8 @@ Handle errors gracefully in async operations:
 
 ```python
 import asyncio
-from helmpy import Chart
-from helmpy.exceptions import HelmError
+from helm_sdkpy import Chart
+from helm_sdkpy.exceptions import HelmError
 
 async def install_with_retry(name: str, chart_name: str, repo: str, max_retries: int = 3):
     """Install chart with retry logic."""
@@ -264,7 +264,7 @@ Limit number of concurrent operations:
 
 ```python
 import asyncio
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 async def install_with_limit(semaphore, name: str, chart_name: str, repo: str):
     """Install chart with concurrency limit."""
@@ -325,7 +325,7 @@ Track progress of concurrent operations:
 
 ```python
 import asyncio
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 class ProgressTracker:
     def __init__(self, total: int):
@@ -401,8 +401,8 @@ Handle timeouts in async operations:
 
 ```python
 import asyncio
-from helmpy import Chart
-from helmpy.exceptions import HelmError
+from helm_sdkpy import Chart
+from helm_sdkpy.exceptions import HelmError
 
 async def install_with_timeout(name: str, chart_name: str, repo: str, operation_timeout: int = 120):
     """Install chart with overall operation timeout."""
@@ -469,9 +469,9 @@ Full workflow with concurrent operations:
 
 ```python
 import asyncio
-from helmpy import Chart
-from helmpy.repo import Repo
-from helmpy.exceptions import HelmError
+from helm_sdkpy import Chart
+from helm_sdkpy.repo import Repo
+from helm_sdkpy.exceptions import HelmError
 from typing import List, Tuple
 import sys
 

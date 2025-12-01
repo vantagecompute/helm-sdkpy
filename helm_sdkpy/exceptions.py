@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Exception classes for helmpy."""
+"""Exception classes for helm_sdkpy."""
 
 from __future__ import annotations
 

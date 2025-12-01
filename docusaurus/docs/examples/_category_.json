@@ -3,6 +3,6 @@
   "position": 4,
   "link": {
     "type": "generated-index",
-    "description": "Practical examples of using helmpy for Helm operations."
+    "description": "Practical examples of using helm-sdkpy for Helm operations."
   }
 }

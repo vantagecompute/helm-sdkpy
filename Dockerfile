@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile for building helmpy with bundled dependencies
+# Multi-stage Dockerfile for building helm_sdkpy with bundled dependencies
 # This creates a self-contained Python wheel with embedded Helm Go library
 
 # Stage 1: Build environment with all dependencies
@@ -38,15 +38,15 @@ WORKDIR /build/go
 RUN go mod download && go mod tidy
 
 # Build the Go shared library
-RUN mkdir -p /build/helmpy/_lib/linux-amd64 && \
+RUN mkdir -p /build/helm_sdkpy/_lib/linux-amd64 && \
     cd shim && \
     go build -buildmode=c-shared \
-        -o /build/helmpy/_lib/linux-amd64/libhelmpy.so \
+        -o /build/helm_sdkpy/_lib/linux-amd64/libhelm_sdkpy.so \
         main.go
 
 # Verify the shared library was built
-RUN ls -lh /build/helmpy/_lib/linux-amd64/libhelmpy.so && \
-    ldd /build/helmpy/_lib/linux-amd64/libhelmpy.so || true
+RUN ls -lh /build/helm_sdkpy/_lib/linux-amd64/libhelm_sdkpy.so && \
+    ldd /build/helm_sdkpy/_lib/linux-amd64/libhelm_sdkpy.so || true
 
 # Stage 3: Build Python wheel
 FROM go-build AS wheel-build
@@ -66,4 +66,4 @@ RUN ls -lh dist/*.whl
 # Stage 4: Extract artifacts
 FROM scratch AS artifacts
 COPY --from=wheel-build /build/dist/*.whl /
-COPY --from=go-build /build/helmpy/_lib/linux-amd64/libhelmpy.so /
+COPY --from=go-build /build/helm_sdkpy/_lib/linux-amd64/libhelm_sdkpy.so /

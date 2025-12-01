@@ -2,13 +2,13 @@
 sidebar_position: 1
 ---
 
-# helmpy Architecture
+# helm-sdkpy Architecture
 
-Overview of helmpy's architecture and design.
+Overview of helm-sdkpy's architecture and design.
 
 ## High-Level Architecture
 
-helmpy provides Python bindings for Helm v4 through a multi-layer architecture:
+helm-sdkpy provides Python bindings for Helm v4 through a multi-layer architecture:
 
 ```
 ┌─────────────────────────────────────┐
@@ -17,7 +17,7 @@ helmpy provides Python bindings for Helm v4 through a multi-layer architecture:
 └──────────────┬──────────────────────┘
                │
 ┌──────────────▼──────────────────────┐
-│     Python Layer (helmpy)           │
+│     Python Layer (helm-sdkpy)           │
 │  - Configuration                    │
 │  - Actions (Install, Upgrade, etc.) │
 │  - Chart Operations                 │
@@ -54,7 +54,7 @@ helmpy provides Python bindings for Helm v4 through a multi-layer architecture:
 
 ### Python Layer
 
-**Location**: `helmpy/`
+**Location**: `helm_sdkpy/`
 
 The Python layer provides a Pythonic, async/await interface to Helm:
 
@@ -68,7 +68,7 @@ All operations are async, using `asyncio.to_thread()` to wrap blocking Go calls.
 
 ### FFI Layer
 
-**Location**: `helmpy/_ffi.py`
+**Location**: `helm_sdkpy/_ffi.py`
 
 Uses CFFI to bridge Python and the Go shared library:
 
@@ -90,10 +90,10 @@ A thin Go layer that:
 - Provides error reporting
 
 Key functions:
-- `helmpy_config_create()` - Initialize Helm configuration
-- `helmpy_install()` - Install a chart
-- `helmpy_upgrade()` - Upgrade a release
-- `helmpy_list()` - List releases
+- `helm-sdkpy_config_create()` - Initialize Helm configuration
+- `helm-sdkpy_install()` - Install a chart
+- `helm-sdkpy_upgrade()` - Upgrade a release
+- `helm-sdkpy_list()` - List releases
 - etc.
 
 ### Helm v4 Library
@@ -110,7 +110,7 @@ Official Helm v4 Go library:
 1. **Python**: User calls `await install.run(...)`
 2. **Python**: `asyncio.to_thread()` schedules blocking call
 3. **FFI**: Convert Python types to C types
-4. **FFI**: Call `helmpy_install()` in shared library
+4. **FFI**: Call `helm-sdkpy_install()` in shared library
 5. **Go Shim**: Receive C call, unmarshal parameters
 6. **Go Shim**: Create Helm `action.Install` client
 7. **Go Shim**: Call `client.Run(chart, values)`
@@ -124,14 +124,14 @@ Official Helm v4 Go library:
 
 ## Async Architecture
 
-All helmpy operations are async to prevent blocking:
+All helm-sdkpy operations are async to prevent blocking:
 
 ```python
 # Blocking Go call wrapped in asyncio.to_thread()
 async def run(self, ...):
     def _install():
         # C FFI call (blocking)
-        result = lib.helmpy_install(...)
+        result = lib.helm-sdkpy_install(...)
         return parse_json(result)
     
     # Run in thread pool
@@ -184,7 +184,7 @@ HelmError
 
 ## Build System
 
-helmpy uses Docker multi-stage builds to create platform-specific shared libraries:
+helm-sdkpy uses Docker multi-stage builds to create platform-specific shared libraries:
 
 1. **Builder stage**: Compiles Go code to `.so`/`.dylib`/`.dll`
 2. **Extract stage**: Copies library to package
@@ -242,7 +242,7 @@ Latest Helm version with improved APIs, better performance, and long-term suppor
 
 ## Security
 
-- **Credentials**: Uses kubeconfig, not stored by helmpy
+- **Credentials**: Uses kubeconfig, not stored by helm-sdkpy
 - **Validation**: Input validation in Python and Go layers
 - **Isolation**: Each Configuration is isolated
 - **Permissions**: Inherits kubectl user permissions

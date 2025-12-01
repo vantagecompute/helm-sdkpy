@@ -13,31 +13,31 @@ sidebar_position: 1
 ## Install via pip
 
 ```bash
-pip install helmpy
+pip install helm-sdkpy
 ```
 
 ## Install via uv
 
 ```bash
-uv add helmpy
+uv add helm-sdkpy
 ```
 
 ## Verify Installation
 
 ```python
 import asyncio
-from helmpy import Configuration
+from helm_sdkpy import Configuration
 
 async def main():
     config = Configuration(namespace="default")
-    print("helmpy is installed and ready!")
+    print("helm-sdkpy is installed and ready!")
 
 asyncio.run(main())
 ```
 
 ## Kubernetes Configuration
 
-helmpy uses your kubeconfig to connect to Kubernetes clusters. By default, it uses:
+helm-sdkpy uses your kubeconfig to connect to Kubernetes clusters. By default, it uses:
 
 1. The `KUBECONFIG` environment variable
 2. `~/.kube/config` if no environment variable is set
@@ -45,7 +45,7 @@ helmpy uses your kubeconfig to connect to Kubernetes clusters. By default, it us
 You can also specify a custom kubeconfig path:
 
 ```python
-from helmpy import Configuration
+from helm_sdkpy import Configuration
 
 config = Configuration(
     namespace="my-namespace",
@@ -59,8 +59,8 @@ config = Configuration(
 For development, clone the repository and install with development dependencies:
 
 ```bash
-git clone https://github.com/vantagecompute/helmpy.git
-cd helmpy
+git clone https://github.com/vantagecompute/helm-sdkpy.git
+cd helm-sdkpy
 uv sync
 ```
 

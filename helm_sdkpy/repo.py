@@ -101,7 +101,7 @@ class RepoAdd:
             options_json = json.dumps(options) if options else ""
             options_cstr = ffi.new("char[]", options_json.encode("utf-8"))
 
-            result = self._lib.helmpy_repo_add(
+            result = self._lib.helm_sdkpy_repo_add(
                 self.config._handle_value,
                 name_cstr,
                 url_cstr,
@@ -148,7 +148,7 @@ class RepoRemove:
         def _repo_remove():
             name_cstr = ffi.new("char[]", name.encode("utf-8"))
 
-            result = self._lib.helmpy_repo_remove(self.config._handle_value, name_cstr)
+            result = self._lib.helm_sdkpy_repo_remove(self.config._handle_value, name_cstr)
 
             if result != 0:
                 check_error(result)
@@ -190,7 +190,7 @@ class RepoList:
         def _repo_list():
             result_json = ffi.new("char **")
 
-            result = self._lib.helmpy_repo_list(self.config._handle_value, result_json)
+            result = self._lib.helm_sdkpy_repo_list(self.config._handle_value, result_json)
 
             if result != 0:
                 check_error(result)
@@ -240,7 +240,7 @@ class RepoUpdate:
         def _repo_update():
             name_cstr = ffi.new("char[]", name.encode("utf-8")) if name else ffi.NULL
 
-            result = self._lib.helmpy_repo_update(self.config._handle_value, name_cstr)
+            result = self._lib.helm_sdkpy_repo_update(self.config._handle_value, name_cstr)
 
             if result != 0:
                 check_error(result)

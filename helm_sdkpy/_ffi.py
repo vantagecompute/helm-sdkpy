@@ -27,65 +27,65 @@ from .exceptions import HelmError, HelmLibraryNotFound
 ffi: Any = FFI()
 ffi.cdef(
     """
-    typedef unsigned long long helmpy_handle;
+    typedef unsigned long long helm_sdkpy_handle;
 
     // Configuration management
-    int helmpy_config_create(const char *namespace, const char *kubeconfig, const char *kubecontext, helmpy_handle *handle_out);
-    void helmpy_config_destroy(helmpy_handle handle);
+    int helm_sdkpy_config_create(const char *namespace, const char *kubeconfig, const char *kubecontext, helm_sdkpy_handle *handle_out);
+    void helm_sdkpy_config_destroy(helm_sdkpy_handle handle);
 
     // Install action
-    int helmpy_install(helmpy_handle handle, const char *release_name, const char *chart_path, const char *values_json, const char *version, int create_namespace, int wait, int timeout_seconds, char **result_json);
+    int helm_sdkpy_install(helm_sdkpy_handle handle, const char *release_name, const char *chart_path, const char *values_json, const char *version, int create_namespace, int wait, int timeout_seconds, char **result_json);
 
     // Upgrade action
-    int helmpy_upgrade(helmpy_handle handle, const char *release_name, const char *chart_path, const char *values_json, const char *version, char **result_json);
+    int helm_sdkpy_upgrade(helm_sdkpy_handle handle, const char *release_name, const char *chart_path, const char *values_json, const char *version, char **result_json);
 
     // Uninstall action
-    int helmpy_uninstall(helmpy_handle handle, const char *release_name, int wait, int timeout_seconds, char **result_json);
+    int helm_sdkpy_uninstall(helm_sdkpy_handle handle, const char *release_name, int wait, int timeout_seconds, char **result_json);
 
     // List action
-    int helmpy_list(helmpy_handle handle, int all, char **result_json);
+    int helm_sdkpy_list(helm_sdkpy_handle handle, int all, char **result_json);
 
     // Status action
-    int helmpy_status(helmpy_handle handle, const char *release_name, char **result_json);
+    int helm_sdkpy_status(helm_sdkpy_handle handle, const char *release_name, char **result_json);
 
     // Rollback action
-    int helmpy_rollback(helmpy_handle handle, const char *release_name, int revision, char **result_json);
+    int helm_sdkpy_rollback(helm_sdkpy_handle handle, const char *release_name, int revision, char **result_json);
 
     // Get values action
-    int helmpy_get_values(helmpy_handle handle, const char *release_name, int all_values, char **result_json);
+    int helm_sdkpy_get_values(helm_sdkpy_handle handle, const char *release_name, int all_values, char **result_json);
 
     // History action
-    int helmpy_history(helmpy_handle handle, const char *release_name, char **result_json);
+    int helm_sdkpy_history(helm_sdkpy_handle handle, const char *release_name, char **result_json);
 
     // Pull action
-    int helmpy_pull(helmpy_handle handle, const char *chart_ref, const char *dest_dir);
+    int helm_sdkpy_pull(helm_sdkpy_handle handle, const char *chart_ref, const char *dest_dir);
 
     // Show chart action
-    int helmpy_show_chart(helmpy_handle handle, const char *chart_path, char **result_json);
+    int helm_sdkpy_show_chart(helm_sdkpy_handle handle, const char *chart_path, char **result_json);
 
     // Show values action
-    int helmpy_show_values(helmpy_handle handle, const char *chart_path, char **result_json);
+    int helm_sdkpy_show_values(helm_sdkpy_handle handle, const char *chart_path, char **result_json);
 
     // Test action
-    int helmpy_test(helmpy_handle handle, const char *release_name, char **result_json);
+    int helm_sdkpy_test(helm_sdkpy_handle handle, const char *release_name, char **result_json);
 
     // Lint action
-    int helmpy_lint(helmpy_handle handle, const char *chart_path, char **result_json);
+    int helm_sdkpy_lint(helm_sdkpy_handle handle, const char *chart_path, char **result_json);
 
     // Package action
-    int helmpy_package(helmpy_handle handle, const char *chart_path, const char *dest_dir, char **result_path);
+    int helm_sdkpy_package(helm_sdkpy_handle handle, const char *chart_path, const char *dest_dir, char **result_path);
 
     // Repository management actions
-    int helmpy_repo_add(helmpy_handle handle, const char *name, const char *url, const char *username, const char *password, const char *options_json);
-    int helmpy_repo_remove(helmpy_handle handle, const char *name);
-    int helmpy_repo_list(helmpy_handle handle, char **result_json);
-    int helmpy_repo_update(helmpy_handle handle, const char *name);
+    int helm_sdkpy_repo_add(helm_sdkpy_handle handle, const char *name, const char *url, const char *username, const char *password, const char *options_json);
+    int helm_sdkpy_repo_remove(helm_sdkpy_handle handle, const char *name);
+    int helm_sdkpy_repo_list(helm_sdkpy_handle handle, char **result_json);
+    int helm_sdkpy_repo_update(helm_sdkpy_handle handle, const char *name);
 
     // Utility functions
-    const char *helmpy_last_error(void);
-    void helmpy_free(void *ptr);
-    int helmpy_version_number(void);
-    const char *helmpy_version_string(void);
+    const char *helm_sdkpy_last_error(void);
+    void helm_sdkpy_free(void *ptr);
+    int helm_sdkpy_version_number(void);
+    const char *helm_sdkpy_version_string(void);
     """
 )
 
@@ -108,7 +108,7 @@ _library_path: str | None = None
 
 
 def configure(path: str | None) -> None:
-    """Force the bindings to load libhelmpy from ``path``.
+    """Force the bindings to load libhelm_sdkpy from ``path``.
 
     Passing ``None`` clears the override and re-enables auto-discovery.
     """
@@ -120,7 +120,7 @@ def configure(path: str | None) -> None:
 
 
 def _find_library() -> str | None:
-    """Find the helmpy shared library."""
+    """Find the helm_sdkpy shared library."""
 
     # Check for configured path first
     if _library_path is not None:
@@ -137,13 +137,13 @@ def _find_library() -> str | None:
         machine = "arm64"
 
     if system == "Linux":
-        lib_name = "libhelmpy.so"
+        lib_name = "libhelm_sdkpy.so"
         platform_dir = f"linux-{machine}"
     elif system == "Darwin":
-        lib_name = "libhelmpy.dylib"
+        lib_name = "libhelm_sdkpy.dylib"
         platform_dir = f"darwin-{machine}"
     elif system == "Windows":
-        lib_name = "helmpy.dll"
+        lib_name = "helm_sdkpy.dll"
         platform_dir = f"windows-{machine}"
     else:
         return None
@@ -180,13 +180,13 @@ def get_library():
         lib_path = _find_library()
         if lib_path is None:
             raise HelmLibraryNotFound(
-                "Could not find helmpy shared library. Please ensure helmpy is properly installed."
+                "Could not find helm_sdkpy shared library. Please ensure helm_sdkpy is properly installed."
             )
 
         try:
             _library = ffi.dlopen(lib_path)
         except OSError as e:
-            raise HelmLibraryNotFound(f"Failed to load helmpy library from {lib_path}: {e}") from e
+            raise HelmLibraryNotFound(f"Failed to load helm_sdkpy library from {lib_path}: {e}") from e
 
         return _library
 
@@ -194,7 +194,7 @@ def get_library():
 def get_version() -> str:
     """Get the version string from the native library."""
     lib = get_library()
-    version_ptr = lib.helmpy_version_string()
+    version_ptr = lib.helm_sdkpy_version_string()
     if version_ptr == ffi.NULL:
         return "unknown"
     return ffi.string(version_ptr).decode("utf-8")
@@ -209,14 +209,14 @@ def string_from_c(c_str) -> str:
         return s
     finally:
         lib = get_library()
-        lib.helmpy_free(c_str)
+        lib.helm_sdkpy_free(c_str)
 
 
 def check_error(result: int) -> None:
     """Check if a C function returned an error and raise an exception if so."""
     if result != 0:
         lib = get_library()
-        err_ptr = lib.helmpy_last_error()
+        err_ptr = lib.helm_sdkpy_last_error()
         if err_ptr != ffi.NULL:
             err_msg = ffi.string(err_ptr).decode("utf-8")
             raise HelmError(err_msg)

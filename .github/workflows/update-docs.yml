@@ -4,7 +4,7 @@ on:
   push:
     branches: ["main"]
     paths:
-      - 'helmpy/**'
+      - 'helm_sdkpy/**'
       - 'scripts/update_docs_version.py'
       - 'pyproject.toml'
       - 'docusaurus/**'

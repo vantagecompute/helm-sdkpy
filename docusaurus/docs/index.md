@@ -1,8 +1,8 @@
-# helmpy
+# helm-sdkpy
 
 **Python bindings for Helm - Kubernetes package manager**
 
-helmpy provides async Python bindings for Helm v4, allowing you to programmatically manage Kubernetes applications using Helm charts from Python.
+helm-sdkpy provides async Python bindings for Helm v4, allowing you to programmatically manage Kubernetes applications using Helm charts from Python.
 
 ## Features
 
@@ -18,7 +18,7 @@ helmpy provides async Python bindings for Helm v4, allowing you to programmatica
 
 ```python
 import asyncio
-from helmpy import Configuration, Install
+from helm_sdkpy import Configuration, Install
 
 async def main():
     # Create a configuration
@@ -77,7 +77,7 @@ Manage Helm chart repositories:
 ## Installation
 
 ```bash
-pip install helmpy
+pip install helm-sdkpy
 ```
 
 ## Requirements

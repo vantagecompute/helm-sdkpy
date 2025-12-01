@@ -4,11 +4,11 @@ sidebar_position: 2
 
 # Build & Packaging
 
-How helmpy is built and packaged for distribution.
+How helm-sdkpy is built and packaged for distribution.
 
 ## Build Architecture
 
-helmpy uses a Docker-based build system to create platform-specific wheels containing compiled Go libraries.
+helm-sdkpy uses a Docker-based build system to create platform-specific wheels containing compiled Go libraries.
 
 ## Build Process
 
@@ -18,13 +18,13 @@ The Go shim is compiled to a shared library:
 
 ```bash
 # Linux
-go build -buildmode=c-shared -o libhelmpy.so
+go build -buildmode=c-shared -o libhelm-sdkpy.so
 
 # macOS
-go build -buildmode=c-shared -o libhelmpy.dylib
+go build -buildmode=c-shared -o libhelm-sdkpy.dylib
 
 # Windows
-go build -buildmode=c-shared -o helmpy.dll
+go build -buildmode=c-shared -o helm-sdkpy.dll
 ```
 
 ### 2. Docker Multi-Stage Build
@@ -41,18 +41,18 @@ RUN apt-get update && apt-get install -y \
 FROM builder AS go-build
 WORKDIR /build/go
 RUN go mod download
-RUN go build -buildmode=c-shared -o libhelmpy.so
+RUN go build -buildmode=c-shared -o libhelm-sdkpy.so
 
 # Stage 3: Extract - Copy to package
 FROM scratch AS extract
-COPY --from=go-build /build/helmpy/_lib/ /helmpy/_lib/
+COPY --from=go-build /build/helm_sdkpy/_lib/ /helm_sdkpy/_lib/
 ```
 
 ### 3. Python Wheel Creation
 
 The wheel includes:
-- Python source code (`helmpy/*.py`)
-- Compiled shared library (`helmpy/_lib/<platform>/libhelmpy.*`)
+- Python source code (`helm_sdkpy/*.py`)
+- Compiled shared library (`helm_sdkpy/_lib/<platform>/libhelm-sdkpy.*`)
 - Metadata (`pyproject.toml`, `README.md`, etc.)
 
 ```bash
@@ -60,15 +60,15 @@ The wheel includes:
 uv build
 
 # Produces:
-# dist/helmpy-X.Y.Z-py3-none-any.whl
-# dist/helmpy-X.Y.Z.tar.gz
+# dist/helm-sdkpy-X.Y.Z-py3-none-any.whl
+# dist/helm-sdkpy-X.Y.Z.tar.gz
 ```
 
 ## Directory Structure
 
 ```
-helmpy/
-├── helmpy/                    # Python package
+helm_sdkpy/
+├── helm_sdkpy/                    # Python package
 │   ├── __init__.py
 │   ├── actions.py
 │   ├── chart.py
@@ -77,15 +77,15 @@ helmpy/
 │   ├── exceptions.py
 │   └── _lib/                  # Compiled libraries
 │       ├── linux-amd64/
-│       │   └── libhelmpy.so
+│       │   └── libhelm-sdkpy.so
 │       ├── linux-arm64/
-│       │   └── libhelmpy.so
+│       │   └── libhelm-sdkpy.so
 │       ├── darwin-amd64/
-│       │   └── libhelmpy.dylib
+│       │   └── libhelm-sdkpy.dylib
 │       ├── darwin-arm64/
-│       │   └── libhelmpy.dylib
+│       │   └── libhelm-sdkpy.dylib
 │       └── windows-amd64/
-│           └── helmpy.dll
+│           └── helm-sdkpy.dll
 ├── go/                        # Go shim
 │   ├── go.mod
 │   ├── go.sum
@@ -104,7 +104,7 @@ helmpy/
 Main build script that:
 1. Builds Docker image
 2. Compiles Go library inside Docker
-3. Extracts library to `helmpy/_lib/`
+3. Extracts library to `helm_sdkpy/_lib/`
 4. Builds Python wheel
 
 ```bash
@@ -116,18 +116,18 @@ Main build script that:
 The Python package detects the platform at runtime:
 
 ```python
-# helmpy/_ffi.py
+# helm_sdkpy/_ffi.py
 system = platform.system()
 machine = platform.machine()
 
 if system == "Linux":
-    lib_name = "libhelmpy.so"
+    lib_name = "libhelm-sdkpy.so"
     platform_dir = f"linux-{machine}"
 elif system == "Darwin":
-    lib_name = "libhelmpy.dylib"
+    lib_name = "libhelm-sdkpy.dylib"
     platform_dir = f"darwin-{machine}"
 elif system == "Windows":
-    lib_name = "helmpy.dll"
+    lib_name = "helm-sdkpy.dll"
     platform_dir = f"windows-{machine}"
 ```
 
@@ -140,8 +140,8 @@ For local development:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone repository
-git clone https://github.com/vantagecompute/helmpy.git
-cd helmpy
+git clone https://github.com/vantagecompute/helm-sdkpy.git
+cd helm-sdkpy
 
 # Install dependencies
 uv sync
@@ -262,7 +262,7 @@ uv publish --publish-url https://test.pypi.org/legacy/
 
 ## Versioning
 
-helmpy uses semantic versioning:
+helm-sdkpy uses semantic versioning:
 
 - **Major**: Breaking API changes
 - **Minor**: New features, backwards compatible
@@ -272,7 +272,7 @@ Version is defined in `pyproject.toml`:
 
 ```toml
 [project]
-name = "helmpy"
+name = "helm-sdkpy"
 version = "0.1.0"
 ```
 
@@ -305,10 +305,10 @@ docker build --no-cache -f Dockerfile .
 
 ```bash
 # Check library exists
-ls -la helmpy/_lib/
+ls -la helm_sdkpy/_lib/
 
 # Set library path explicitly
-export HELMPY_LIBRARY_PATH=/path/to/libhelmpy.so
+export HELMPY_LIBRARY_PATH=/path/to/libhelm-sdkpy.so
 ```
 
 ### Go compilation errors
@@ -325,5 +325,5 @@ go version  # Should be 1.23+
 
 ## Next Steps
 
-- [Architecture Overview](helmpy-architecture) - System design
+- [Architecture Overview](helm-sdkpy-architecture) - System design
 - [API Reference](../api/actions) - API documentation

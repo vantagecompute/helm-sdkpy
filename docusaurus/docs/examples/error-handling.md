@@ -4,11 +4,11 @@ sidebar_position: 6
 
 # Error Handling
 
-Learn how to handle errors robustly in helmpy applications.
+Learn how to handle errors robustly in helm-sdkpy applications.
 
 ## Exception Hierarchy
 
-helmpy provides a hierarchy of exceptions:
+helm-sdkpy provides a hierarchy of exceptions:
 
 ```python
 HelmError                    # Base exception
@@ -28,8 +28,8 @@ HelmError                    # Base exception
 Catch specific exceptions:
 
 ```python
-from helmpy import Chart
-from helmpy.exceptions import HelmError, InstallError, NotFoundError
+from helm_sdkpy import Chart
+from helm_sdkpy.exceptions import HelmError, InstallError, NotFoundError
 
 chart = Chart(
     name="nginx",
@@ -63,8 +63,8 @@ except HelmError as e:
 Try installation with fallback to defaults:
 
 ```python
-from helmpy import Chart
-from helmpy.exceptions import HelmError
+from helm_sdkpy import Chart
+from helm_sdkpy.exceptions import HelmError
 
 def install_with_fallback(name: str, chart: str, repo: str, values: dict):
     """Try installing with custom values, fall back to defaults."""
@@ -112,8 +112,8 @@ install_with_fallback("nginx", "nginx", "https://charts.bitnami.com/bitnami", va
 Handle upgrade failures with automatic rollback:
 
 ```python
-from helmpy import Chart
-from helmpy.exceptions import HelmError, UpgradeError
+from helm_sdkpy import Chart
+from helm_sdkpy.exceptions import HelmError, UpgradeError
 
 def safe_upgrade(name: str, namespace: str, values: dict):
     """Upgrade with automatic rollback on failure."""
@@ -170,8 +170,8 @@ safe_upgrade(
 Install if release doesn't exist, upgrade if it does:
 
 ```python
-from helmpy import Chart
-from helmpy.exceptions import HelmError, NotFoundError
+from helm_sdkpy import Chart
+from helm_sdkpy.exceptions import HelmError, NotFoundError
 
 def install_or_upgrade(name: str, chart_name: str, repo: str,
                        namespace: str, values: dict = None):
@@ -240,8 +240,8 @@ print(f"Action taken: {action}")
 Implement retry logic for transient failures:
 
 ```python
-from helmpy import Chart
-from helmpy.exceptions import HelmError
+from helm_sdkpy import Chart
+from helm_sdkpy.exceptions import HelmError
 import time
 
 def install_with_retry(name: str, chart: str, repo: str,
@@ -289,8 +289,8 @@ Handle errors in async operations:
 
 ```python
 import asyncio
-from helmpy import Chart
-from helmpy.exceptions import HelmError
+from helm_sdkpy import Chart
+from helm_sdkpy.exceptions import HelmError
 
 async def install_with_error_handling(name: str, chart: str, repo: str):
     """Install chart with comprehensive async error handling."""
@@ -356,9 +356,9 @@ asyncio.run(install_multiple_safe())
 Validate before performing operations:
 
 ```python
-from helmpy import Chart
-from helmpy.repo import Repo
-from helmpy.exceptions import HelmError, ValidationError
+from helm_sdkpy import Chart
+from helm_sdkpy.repo import Repo
+from helm_sdkpy.exceptions import HelmError, ValidationError
 
 def validate_and_install(name: str, chart: str, repo_url: str,
                          namespace: str, values: dict):
@@ -424,8 +424,8 @@ except HelmError as e:
 Comprehensive error handling workflow:
 
 ```python
-from helmpy import Chart
-from helmpy.exceptions import (
+from helm_sdkpy import Chart
+from helm_sdkpy.exceptions import (
     HelmError, InstallError, UpgradeError, NotFoundError,
     ValidationError, TimeoutError
 )

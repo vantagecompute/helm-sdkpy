@@ -1,4 +1,4 @@
-# GitHub Copilot Instructions for Helmpy
+# GitHub Copilot Instructions for helm-sdkpy
 
 ## Python Command Execution
 
@@ -57,7 +57,7 @@ This is a Python CLI application using:
 - `uv` for dependency management
 - `pytest` for testing
 - `just` for task automation
-- `Helmpy` as the main package
+- `helm-sdkpy` as the main package
 - `docusaurus` for documentation
 - `examples/` directory for usage patterns
 ## Testing Patterns

@@ -19,7 +19,7 @@ package main
 #include <stdint.h>
 #include <string.h>
 
-typedef unsigned long long helmpy_handle;
+typedef unsigned long long helm_sdkpy_handle;
 */
 import "C"
 
@@ -58,7 +58,7 @@ var (
 )
 
 func init() {
-	versionCString = C.CString("helmpy-v0.0.1")
+	versionCString = C.CString("helm-sdkpy-v0.0.1")
 }
 
 func setError(err error) C.int {
@@ -76,12 +76,12 @@ func recordErrorf(format string, args ...any) C.int {
 	return setError(fmt.Errorf(format, args...))
 }
 
-func nextHandle() C.helmpy_handle {
-	return C.helmpy_handle(handleSeq.Add(1))
+func nextHandle() C.helm_sdkpy_handle {
+	return C.helm_sdkpy_handle(handleSeq.Add(1))
 }
 
-//export helmpy_last_error
-func helmpy_last_error() *C.char {
+//export helm_sdkpy_last_error
+func helm_sdkpy_last_error() *C.char {
 	errMu.Lock()
 	defer errMu.Unlock()
 	if lastErr == "" {
@@ -90,25 +90,25 @@ func helmpy_last_error() *C.char {
 	return C.CString(lastErr)
 }
 
-//export helmpy_free
-func helmpy_free(ptr unsafe.Pointer) {
+//export helm_sdkpy_free
+func helm_sdkpy_free(ptr unsafe.Pointer) {
 	C.free(ptr)
 }
 
-//export helmpy_version_string
-func helmpy_version_string() *C.char {
+//export helm_sdkpy_version_string
+func helm_sdkpy_version_string() *C.char {
 	return versionCString
 }
 
-//export helmpy_version_number
-func helmpy_version_number() C.int {
+//export helm_sdkpy_version_number
+func helm_sdkpy_version_number() C.int {
 	return 1 // Version 0.0.1
 }
 
 // Configuration management
 
-//export helmpy_config_create
-func helmpy_config_create(namespace *C.char, kubeconfig *C.char, kubecontext *C.char, handle_out *C.helmpy_handle) C.int {
+//export helm_sdkpy_config_create
+func helm_sdkpy_config_create(namespace *C.char, kubeconfig *C.char, kubecontext *C.char, handle_out *C.helm_sdkpy_handle) C.int {
 	ns := C.GoString(namespace)
 	kc := C.GoString(kubeconfig)
 	kctx := C.GoString(kubecontext)
@@ -146,12 +146,12 @@ func helmpy_config_create(namespace *C.char, kubeconfig *C.char, kubecontext *C.
 	return 0
 }
 
-//export helmpy_config_destroy
-func helmpy_config_destroy(handle C.helmpy_handle) {
+//export helm_sdkpy_config_destroy
+func helm_sdkpy_config_destroy(handle C.helm_sdkpy_handle) {
 	configs.Delete(handle)
 }
 
-func getConfig(handle C.helmpy_handle) (*configState, error) {
+func getConfig(handle C.helm_sdkpy_handle) (*configState, error) {
 	val, ok := configs.Load(handle)
 	if !ok {
 		return nil, fmt.Errorf("invalid configuration handle")
@@ -161,8 +161,8 @@ func getConfig(handle C.helmpy_handle) (*configState, error) {
 
 // Install action
 
-//export helmpy_install
-func helmpy_install(handle C.helmpy_handle, release_name *C.char, chart_path *C.char, values_json *C.char, version *C.char, create_namespace C.int, wait C.int, timeout_seconds C.int, result_json **C.char) C.int {
+//export helm_sdkpy_install
+func helm_sdkpy_install(handle C.helm_sdkpy_handle, release_name *C.char, chart_path *C.char, values_json *C.char, version *C.char, create_namespace C.int, wait C.int, timeout_seconds C.int, result_json **C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -237,8 +237,8 @@ func helmpy_install(handle C.helmpy_handle, release_name *C.char, chart_path *C.
 
 // Upgrade action
 
-//export helmpy_upgrade
-func helmpy_upgrade(handle C.helmpy_handle, release_name *C.char, chart_path *C.char, values_json *C.char, version *C.char, result_json **C.char) C.int {
+//export helm_sdkpy_upgrade
+func helm_sdkpy_upgrade(handle C.helm_sdkpy_handle, release_name *C.char, chart_path *C.char, values_json *C.char, version *C.char, result_json **C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -299,8 +299,8 @@ func helmpy_upgrade(handle C.helmpy_handle, release_name *C.char, chart_path *C.
 
 // Uninstall action
 
-//export helmpy_uninstall
-func helmpy_uninstall(handle C.helmpy_handle, release_name *C.char, wait C.int, timeout_seconds C.int, result_json **C.char) C.int {
+//export helm_sdkpy_uninstall
+func helm_sdkpy_uninstall(handle C.helm_sdkpy_handle, release_name *C.char, wait C.int, timeout_seconds C.int, result_json **C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -344,8 +344,8 @@ func helmpy_uninstall(handle C.helmpy_handle, release_name *C.char, wait C.int, 
 
 // List action
 
-//export helmpy_list
-func helmpy_list(handle C.helmpy_handle, all C.int, result_json **C.char) C.int {
+//export helm_sdkpy_list
+func helm_sdkpy_list(handle C.helm_sdkpy_handle, all C.int, result_json **C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -378,8 +378,8 @@ func helmpy_list(handle C.helmpy_handle, all C.int, result_json **C.char) C.int 
 
 // Get/Status action
 
-//export helmpy_status
-func helmpy_status(handle C.helmpy_handle, release_name *C.char, result_json **C.char) C.int {
+//export helm_sdkpy_status
+func helm_sdkpy_status(handle C.helm_sdkpy_handle, release_name *C.char, result_json **C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -411,8 +411,8 @@ func helmpy_status(handle C.helmpy_handle, release_name *C.char, result_json **C
 
 // Rollback action
 
-//export helmpy_rollback
-func helmpy_rollback(handle C.helmpy_handle, release_name *C.char, revision C.int, result_json **C.char) C.int {
+//export helm_sdkpy_rollback
+func helm_sdkpy_rollback(handle C.helm_sdkpy_handle, release_name *C.char, revision C.int, result_json **C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -446,8 +446,8 @@ func helmpy_rollback(handle C.helmpy_handle, release_name *C.char, revision C.in
 
 // Get values action
 
-//export helmpy_get_values
-func helmpy_get_values(handle C.helmpy_handle, release_name *C.char, all_values C.int, result_json **C.char) C.int {
+//export helm_sdkpy_get_values
+func helm_sdkpy_get_values(handle C.helm_sdkpy_handle, release_name *C.char, all_values C.int, result_json **C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -482,8 +482,8 @@ func helmpy_get_values(handle C.helmpy_handle, release_name *C.char, all_values 
 
 // History action
 
-//export helmpy_history
-func helmpy_history(handle C.helmpy_handle, release_name *C.char, result_json **C.char) C.int {
+//export helm_sdkpy_history
+func helm_sdkpy_history(handle C.helm_sdkpy_handle, release_name *C.char, result_json **C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -515,8 +515,8 @@ func helmpy_history(handle C.helmpy_handle, release_name *C.char, result_json **
 
 // Pull action
 
-//export helmpy_pull
-func helmpy_pull(handle C.helmpy_handle, chart_ref *C.char, dest_dir *C.char) C.int {
+//export helm_sdkpy_pull
+func helm_sdkpy_pull(handle C.helm_sdkpy_handle, chart_ref *C.char, dest_dir *C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -546,8 +546,8 @@ func helmpy_pull(handle C.helmpy_handle, chart_ref *C.char, dest_dir *C.char) C.
 
 // Show chart action
 
-//export helmpy_show_chart
-func helmpy_show_chart(handle C.helmpy_handle, chart_path *C.char, result_json **C.char) C.int {
+//export helm_sdkpy_show_chart
+func helm_sdkpy_show_chart(handle C.helm_sdkpy_handle, chart_path *C.char, result_json **C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -579,8 +579,8 @@ func helmpy_show_chart(handle C.helmpy_handle, chart_path *C.char, result_json *
 
 // Show values action
 
-//export helmpy_show_values
-func helmpy_show_values(handle C.helmpy_handle, chart_path *C.char, result_json **C.char) C.int {
+//export helm_sdkpy_show_values
+func helm_sdkpy_show_values(handle C.helm_sdkpy_handle, chart_path *C.char, result_json **C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -612,8 +612,8 @@ func helmpy_show_values(handle C.helmpy_handle, chart_path *C.char, result_json 
 
 // Test action
 
-//export helmpy_test
-func helmpy_test(handle C.helmpy_handle, release_name *C.char, result_json **C.char) C.int {
+//export helm_sdkpy_test
+func helm_sdkpy_test(handle C.helm_sdkpy_handle, release_name *C.char, result_json **C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -645,8 +645,8 @@ func helmpy_test(handle C.helmpy_handle, release_name *C.char, result_json **C.c
 
 // Lint action
 
-//export helmpy_lint
-func helmpy_lint(handle C.helmpy_handle, chart_path *C.char, result_json **C.char) C.int {
+//export helm_sdkpy_lint
+func helm_sdkpy_lint(handle C.helm_sdkpy_handle, chart_path *C.char, result_json **C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -684,8 +684,8 @@ func helmpy_lint(handle C.helmpy_handle, chart_path *C.char, result_json **C.cha
 
 // Package action
 
-//export helmpy_package
-func helmpy_package(handle C.helmpy_handle, chart_path *C.char, dest_dir *C.char, result_path **C.char) C.int {
+//export helm_sdkpy_package
+func helm_sdkpy_package(handle C.helm_sdkpy_handle, chart_path *C.char, dest_dir *C.char, result_path **C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -715,8 +715,8 @@ func helmpy_package(handle C.helmpy_handle, chart_path *C.char, dest_dir *C.char
 
 // Repository management actions
 
-//export helmpy_repo_add
-func helmpy_repo_add(handle C.helmpy_handle, name *C.char, url *C.char, username *C.char, password *C.char, options_json *C.char) C.int {
+//export helm_sdkpy_repo_add
+func helm_sdkpy_repo_add(handle C.helm_sdkpy_handle, name *C.char, url *C.char, username *C.char, password *C.char, options_json *C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -811,8 +811,8 @@ func helmpy_repo_add(handle C.helmpy_handle, name *C.char, url *C.char, username
 	return 0
 }
 
-//export helmpy_repo_remove
-func helmpy_repo_remove(handle C.helmpy_handle, name *C.char) C.int {
+//export helm_sdkpy_repo_remove
+func helm_sdkpy_repo_remove(handle C.helm_sdkpy_handle, name *C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -845,8 +845,8 @@ func helmpy_repo_remove(handle C.helmpy_handle, name *C.char) C.int {
 	return 0
 }
 
-//export helmpy_repo_list
-func helmpy_repo_list(handle C.helmpy_handle, result_json **C.char) C.int {
+//export helm_sdkpy_repo_list
+func helm_sdkpy_repo_list(handle C.helm_sdkpy_handle, result_json **C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -878,8 +878,8 @@ func helmpy_repo_list(handle C.helmpy_handle, result_json **C.char) C.int {
 	return 0
 }
 
-//export helmpy_repo_update
-func helmpy_repo_update(handle C.helmpy_handle, name *C.char) C.int {
+//export helm_sdkpy_repo_update
+func helm_sdkpy_repo_update(handle C.helm_sdkpy_handle, name *C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)

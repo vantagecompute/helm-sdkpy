@@ -1,5 +1,5 @@
 {
-  "name": "helmpy-docs",
+  "name": "helm-sdkpy-docs",
   "version": "0.0.1",
   "private": true,
   "scripts": {

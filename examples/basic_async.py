@@ -13,19 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Example showing basic async helmpy usage."""
+"""Example showing basic async helm-sdkpy usage."""
 
 import asyncio
-import helmpy
+import helm_sdkpy
 
 
 async def main():
-    """Basic example of using helmpy with async/await."""
-    print(f"helmpy version: {helmpy.__version__}")
+    """Basic example of using helm-sdkpy with async/await."""
+    print(f"helm-sdkpy version: {helm_sdkpy.__version__}")
     
     try:
-        print(f"Library version: {helmpy.get_version()}")
-    except helmpy.HelmLibraryNotFound:
+        print(f"Library version: {helm_sdkpy.get_version()}")
+    except helm_sdkpy.HelmLibraryNotFound:
         print("Library not found - please build the library first with 'just build-lib'")
         return
 
@@ -52,7 +52,7 @@ async def main():
     
     example_code = """
     import asyncio
-    from helmpy import Configuration, Install, List
+    from helm_sdkpy import Configuration, Install, List
 
     async def main():
         # Create a configuration for the default namespace

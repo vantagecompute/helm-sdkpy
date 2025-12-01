@@ -1,6 +1,6 @@
 <div align="center">
 
-# helmpy
+# helm-sdkpy
 
 Python bindings for Helm - The Kubernetes Package Manager
 
@@ -23,26 +23,26 @@ Python bindings for the Helm v4 Go library. Ships with a self-contained Go shim 
 
 ## 🚀 Quick Start
 
-**Note**: helmpy uses an async-first API. All operations must be awaited. This enables non-blocking execution and concurrent operations with `asyncio.gather()`.
+**Note**: helm-sdkpy uses an async-first API. All operations must be awaited. This enables non-blocking execution and concurrent operations with `asyncio.gather()`.
 
 ### Installation
 
 ```bash
-pip install helmpy
+pip install helm-sdkpy
 ```
 
 ### Basic Usage
 
 ```python
 import asyncio
-import helmpy
+import helm-sdkpy
 
 async def main():
     # Create a configuration
-    config = helmpy.Configuration(namespace="default")
+    config = helm-sdkpy.Configuration(namespace="default")
 
     # Install a chart from a local path
-    install = helmpy.Install(config)
+    install = helm-sdkpy.Install(config)
     result = await install.run(
         release_name="my-nginx",
         chart_path="./nginx-chart",
@@ -67,13 +67,13 @@ async def main():
     print(f"Installed: {result['name']}")
 
     # List releases
-    list_action = helmpy.List(config)
+    list_action = helm-sdkpy.List(config)
     releases = await list_action.run(all=True)
     for release in releases:
         print(f"Release: {release['name']}")
 
     # Upgrade a release
-    upgrade = helmpy.Upgrade(config)
+    upgrade = helm-sdkpy.Upgrade(config)
     result = await upgrade.run(
         release_name="my-nginx",
         chart_path="./nginx-chart",
@@ -81,7 +81,7 @@ async def main():
     )
 
     # Uninstall a release
-    uninstall = helmpy.Uninstall(config)
+    uninstall = helm-sdkpy.Uninstall(config)
     result = await uninstall.run("my-nginx")
 
 asyncio.run(main())
@@ -93,11 +93,11 @@ Take advantage of Python's asyncio to run multiple Helm operations concurrently:
 
 ```python
 import asyncio
-import helmpy
+import helm-sdkpy
 
 async def deploy_multiple_apps():
-    config = helmpy.Configuration(namespace="default")
-    install = helmpy.Install(config)
+    config = helm-sdkpy.Configuration(namespace="default")
+    install = helm-sdkpy.Install(config)
     
     # Install multiple charts concurrently
     results = await asyncio.gather(
@@ -114,7 +114,7 @@ asyncio.run(deploy_multiple_apps())
 
 ## 📖 Chart Path Formats
 
-helmpy supports multiple chart location formats:
+helm-sdkpy supports multiple chart location formats:
 
 ### Local Paths
 Point to a chart directory or packaged chart (.tgz) on your local filesystem:
@@ -174,8 +174,8 @@ and concurrent execution with `asyncio.gather()`.
 ### Building from Source
 
 ```bash
-git clone https://github.com/vantagecompute/helmpy.git
-cd helmpy
+git clone https://github.com/vantagecompute/helm-sdkpy.git
+cd helm-sdkpy
 
 # Build native library using Docker
 just build-lib
@@ -219,7 +219,7 @@ See the [examples/](examples/) directory for more usage examples.
 
 ## 🏗️ Architecture
 
-helmpy follows the same architecture as [dqlitepy](https://github.com/vantagecompute/dqlitepy):
+helm-sdkpy follows the same architecture as [dqlitepy](https://github.com/vantagecompute/dqlitepy):
 
 1. **Go Shim Layer** - Exposes Helm v4 API via C FFI
 2. **Python FFI** - CFFI bindings to Go shared library
@@ -243,5 +243,5 @@ Contributions welcome! Please ensure:
 
 ## 💬 Support
 
-- [GitHub Issues](https://github.com/vantagecompute/helmpy/issues) - Bug reports and feature requests
+- [GitHub Issues](https://github.com/vantagecompute/helm_sdkpy/issues) - Bug reports and feature requests
 - [Examples](examples/) - Sample code and use cases

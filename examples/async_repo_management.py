@@ -16,26 +16,26 @@
 """
 Async Repository Management Example
 
-This example demonstrates using helmpy's async API for repository management.
+This example demonstrates using helm-sdkpy's async API for repository management.
 All operations are non-blocking and can be used in async applications.
 """
 
 import asyncio
 import json
 
-import helmpy
+import helm_sdkpy
 
 
-async def add_repository(name: str, url: str, config: helmpy.Configuration):
+async def add_repository(name: str, url: str, config: helm_sdkpy.Configuration):
     """Add a Helm repository asynchronously."""
     print(f"Adding repository: {name}")
-    repo_add = helmpy.RepoAdd(config)
+    repo_add = helm_sdkpy.RepoAdd(config)
     
     try:
         await repo_add.run(name, url)
         print(f"✓ Repository '{name}' added successfully")
         return True
-    except helmpy.HelmError as e:
+    except helm_sdkpy.HelmError as e:
         if "already exists" in str(e):
             print(f"ℹ Repository '{name}' already exists")
             return True
@@ -44,10 +44,10 @@ async def add_repository(name: str, url: str, config: helmpy.Configuration):
             return False
 
 
-async def list_repositories(config: helmpy.Configuration):
+async def list_repositories(config: helm_sdkpy.Configuration):
     """List all configured repositories asynchronously."""
     print("\nListing repositories...")
-    repo_list = helmpy.RepoList(config)
+    repo_list = helm_sdkpy.RepoList(config)
     
     try:
         repos = await repo_list.run()
@@ -55,35 +55,35 @@ async def list_repositories(config: helmpy.Configuration):
         for repo in repos:
             print(f"  - {repo.get('name', 'unknown')}: {repo.get('url', 'unknown')}")
         return repos
-    except helmpy.HelmError as e:
+    except helm_sdkpy.HelmError as e:
         print(f"✗ Failed to list repositories: {e}")
         return []
 
 
-async def update_repositories(config: helmpy.Configuration):
+async def update_repositories(config: helm_sdkpy.Configuration):
     """Update all repository indexes asynchronously."""
     print("\nUpdating repository indexes...")
-    repo_update = helmpy.RepoUpdate(config)
+    repo_update = helm_sdkpy.RepoUpdate(config)
     
     try:
         await repo_update.run()
         print("✓ Repository indexes updated successfully")
         return True
-    except helmpy.HelmError as e:
+    except helm_sdkpy.HelmError as e:
         print(f"✗ Failed to update repositories: {e}")
         return False
 
 
-async def remove_repository(name: str, config: helmpy.Configuration):
+async def remove_repository(name: str, config: helm_sdkpy.Configuration):
     """Remove a Helm repository asynchronously."""
     print(f"\nRemoving repository: {name}")
-    repo_remove = helmpy.RepoRemove(config)
+    repo_remove = helm_sdkpy.RepoRemove(config)
     
     try:
         await repo_remove.run(name)
         print(f"✓ Repository '{name}' removed successfully")
         return True
-    except helmpy.HelmError as e:
+    except helm_sdkpy.HelmError as e:
         print(f"✗ Failed to remove '{name}': {e}")
         return False
 
@@ -91,11 +91,11 @@ async def remove_repository(name: str, config: helmpy.Configuration):
 async def main():
     """Main async function demonstrating repository management."""
     print("=" * 60)
-    print("  Helmpy Async Repository Management Demo")
+    print("  helm-sdkpy Async Repository Management Demo")
     print("=" * 60)
     
     # Create configuration
-    config = helmpy.Configuration()
+    config = helm_sdkpy.Configuration()
     
     try:
         # Define repositories to add

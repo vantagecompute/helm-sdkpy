@@ -3,8 +3,8 @@
   "position": 4,
   "link": {
     "type": "generated-index",
-    "title": "helmpy API Reference",
-    "description": "Complete API documentation for helmpy",
+    "title": "helm-sdkpy API Reference",
+    "description": "Complete API documentation for helm-sdkpy",
     "slug": "/api"
   }
 }

@@ -55,13 +55,13 @@ class Configuration:
         kubecontext: str | None = None,
     ):
         self._lib = get_library()
-        self._handle = ffi.new("helmpy_handle *")
+        self._handle = ffi.new("helm_sdkpy_handle *")
 
         ns_cstr = ffi.new("char[]", namespace.encode("utf-8"))
         kc_cstr = ffi.new("char[]", kubeconfig.encode("utf-8")) if kubeconfig else ffi.NULL
         kctx_cstr = ffi.new("char[]", kubecontext.encode("utf-8")) if kubecontext else ffi.NULL
 
-        result = self._lib.helmpy_config_create(ns_cstr, kc_cstr, kctx_cstr, self._handle)
+        result = self._lib.helm_sdkpy_config_create(ns_cstr, kc_cstr, kctx_cstr, self._handle)
         check_error(result)
 
         self._handle_value = self._handle[0]
@@ -69,7 +69,7 @@ class Configuration:
     def __del__(self):
         """Clean up the configuration handle."""
         if hasattr(self, "_lib") and hasattr(self, "_handle_value"):
-            self._lib.helmpy_config_destroy(self._handle_value)
+            self._lib.helm_sdkpy_config_destroy(self._handle_value)
 
     def __enter__(self):
         """Support for context manager."""
@@ -143,7 +143,7 @@ class Install:
             version_str = version or ""
             version_cstr = ffi.new("char[]", version_str.encode("utf-8"))
 
-            result = self._lib.helmpy_install(
+            result = self._lib.helm_sdkpy_install(
                 self.config._handle_value,
                 name_cstr,
                 path_cstr,
@@ -223,7 +223,7 @@ class Upgrade:
             version_str = version or ""
             version_cstr = ffi.new("char[]", version_str.encode("utf-8"))
 
-            result = self._lib.helmpy_upgrade(
+            result = self._lib.helm_sdkpy_upgrade(
                 self.config._handle_value,
                 name_cstr,
                 path_cstr,
@@ -282,7 +282,7 @@ class Uninstall:
             result_json = ffi.new("char **")
             name_cstr = ffi.new("char[]", release_name.encode("utf-8"))
 
-            result = self._lib.helmpy_uninstall(
+            result = self._lib.helm_sdkpy_uninstall(
                 self.config._handle_value, name_cstr, 1 if wait else 0, timeout, result_json
             )
 
@@ -334,7 +334,7 @@ class List:
             result_json = ffi.new("char **")
             all_flag = 1 if all else 0
 
-            result = self._lib.helmpy_list(self.config._handle_value, all_flag, result_json)
+            result = self._lib.helm_sdkpy_list(self.config._handle_value, all_flag, result_json)
 
             if result != 0:
                 check_error(result)
@@ -384,7 +384,7 @@ class Status:
             result_json = ffi.new("char **")
             name_cstr = ffi.new("char[]", release_name.encode("utf-8"))
 
-            result = self._lib.helmpy_status(self.config._handle_value, name_cstr, result_json)
+            result = self._lib.helm_sdkpy_status(self.config._handle_value, name_cstr, result_json)
 
             if result != 0:
                 check_error(result)
@@ -435,7 +435,7 @@ class Rollback:
             result_json = ffi.new("char **")
             name_cstr = ffi.new("char[]", release_name.encode("utf-8"))
 
-            result = self._lib.helmpy_rollback(
+            result = self._lib.helm_sdkpy_rollback(
                 self.config._handle_value, name_cstr, revision, result_json
             )
 
@@ -489,7 +489,7 @@ class GetValues:
             name_cstr = ffi.new("char[]", release_name.encode("utf-8"))
             all_flag = 1 if all else 0
 
-            result = self._lib.helmpy_get_values(
+            result = self._lib.helm_sdkpy_get_values(
                 self.config._handle_value, name_cstr, all_flag, result_json
             )
 
@@ -541,7 +541,7 @@ class History:
             result_json = ffi.new("char **")
             name_cstr = ffi.new("char[]", release_name.encode("utf-8"))
 
-            result = self._lib.helmpy_history(self.config._handle_value, name_cstr, result_json)
+            result = self._lib.helm_sdkpy_history(self.config._handle_value, name_cstr, result_json)
 
             if result != 0:
                 check_error(result)

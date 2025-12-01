@@ -14,9 +14,9 @@
 # limitations under the License.
 
 """
-Complete async example demonstrating all helmpy features.
+Complete async example demonstrating all helm-sdkpy features.
 
-This example shows how to use helmpy with async/await to:
+This example shows how to use helm-sdkpy with async/await to:
 1. Manage Helm configuration
 2. Install, upgrade, and uninstall charts
 3. Query release information
@@ -27,7 +27,7 @@ import asyncio
 import json
 import sys
 
-import helmpy
+import helm_sdkpy
 
 
 def print_section(title):
@@ -42,8 +42,8 @@ async def demo_install():
     print_section("Installing a Chart (Async)")
     
     example_code = """
-    config = helmpy.Configuration(namespace="default")
-    install = helmpy.Install(config)
+    config = helm_sdkpy.Configuration(namespace="default")
+    install = helm_sdkpy.Install(config)
     
     # Install with async/await
     result = await install.run(
@@ -67,8 +67,8 @@ async def demo_list():
     print_section("Listing Releases (Async)")
     
     example_code = """
-    config = helmpy.Configuration(namespace="default")
-    list_action = helmpy.List(config)
+    config = helm_sdkpy.Configuration(namespace="default")
+    list_action = helm_sdkpy.List(config)
     
     # List all releases asynchronously
     releases = await list_action.run(all=True)
@@ -85,8 +85,8 @@ async def demo_upgrade():
     print_section("Upgrading a Release (Async)")
     
     example_code = """
-    config = helmpy.Configuration(namespace="default")
-    upgrade = helmpy.Upgrade(config)
+    config = helm_sdkpy.Configuration(namespace="default")
+    upgrade = helm_sdkpy.Upgrade(config)
     
     # Upgrade asynchronously
     result = await upgrade.run(
@@ -104,8 +104,8 @@ async def demo_status():
     print_section("Getting Release Status (Async)")
     
     example_code = """
-    config = helmpy.Configuration(namespace="default")
-    status = helmpy.Status(config)
+    config = helm_sdkpy.Configuration(namespace="default")
+    status = helm_sdkpy.Status(config)
     
     # Get status asynchronously
     result = await status.run("my-nginx")
@@ -120,8 +120,8 @@ async def demo_rollback():
     print_section("Rolling Back a Release (Async)")
     
     example_code = """
-    config = helmpy.Configuration(namespace="default")
-    rollback = helmpy.Rollback(config)
+    config = helm_sdkpy.Configuration(namespace="default")
+    rollback = helm_sdkpy.Rollback(config)
     
     # Rollback asynchronously
     result = await rollback.run("my-nginx", revision=0)
@@ -135,8 +135,8 @@ async def demo_get_values():
     print_section("Getting Release Values (Async)")
     
     example_code = """
-    config = helmpy.Configuration(namespace="default")
-    get_values = helmpy.GetValues(config)
+    config = helm_sdkpy.Configuration(namespace="default")
+    get_values = helm_sdkpy.GetValues(config)
     
     # Get values asynchronously
     values = await get_values.run("my-nginx", all=False)
@@ -154,8 +154,8 @@ async def demo_history():
     print_section("Getting Release History (Async)")
     
     example_code = """
-    config = helmpy.Configuration(namespace="default")
-    history = helmpy.History(config)
+    config = helm_sdkpy.Configuration(namespace="default")
+    history = helm_sdkpy.History(config)
     
     # Get history asynchronously
     revisions = await history.run("my-nginx")
@@ -170,29 +170,29 @@ async def demo_chart_operations():
     print_section("Chart Operations (Async)")
     
     example_code = """
-    config = helmpy.Configuration(namespace="default")
+    config = helm_sdkpy.Configuration(namespace="default")
     
     # Pull a chart asynchronously
-    pull = helmpy.Pull(config)
+    pull = helm_sdkpy.Pull(config)
     await pull.run("stable/nginx", dest_dir="./charts")
     
     # Show chart information asynchronously
-    show = helmpy.Show(config)
+    show = helm_sdkpy.Show(config)
     chart_yaml = await show.chart("./nginx-chart")
     values_yaml = await show.values("./nginx-chart")
     
     # Lint a chart asynchronously
-    lint = helmpy.Lint(config)
+    lint = helm_sdkpy.Lint(config)
     result = await lint.run("./nginx-chart")
     print(f"Lint result: {result}")
     
     # Package a chart asynchronously
-    package = helmpy.Package(config)
+    package = helm_sdkpy.Package(config)
     archive_path = await package.run("./nginx-chart", dest_dir="./dist")
     print(f"Created: {archive_path}")
     
     # Test a release asynchronously
-    test = helmpy.Test(config)
+    test = helm_sdkpy.Test(config)
     result = await test.run("my-nginx")
     print(f"Test completed: {result['name']}")
     """
@@ -204,10 +204,10 @@ async def demo_concurrent_operations():
     print_section("Concurrent Operations (Async)")
     
     example_code = """
-    config = helmpy.Configuration(namespace="default")
+    config = helm_sdkpy.Configuration(namespace="default")
     
     # Install multiple charts concurrently
-    install = helmpy.Install(config)
+    install = helm_sdkpy.Install(config)
     
     results = await asyncio.gather(
         install.run("app-1", "oci://registry.io/chart1"),
@@ -219,8 +219,8 @@ async def demo_concurrent_operations():
         print(f"Installed: {result['name']}")
     
     # List and check status concurrently
-    list_action = helmpy.List(config)
-    status = helmpy.Status(config)
+    list_action = helm_sdkpy.List(config)
+    status = helm_sdkpy.Status(config)
     
     releases, status_app1 = await asyncio.gather(
         list_action.run(all=True),
@@ -235,8 +235,8 @@ async def demo_uninstall():
     print_section("Uninstalling a Release (Async)")
     
     example_code = """
-    config = helmpy.Configuration(namespace="default")
-    uninstall = helmpy.Uninstall(config)
+    config = helm_sdkpy.Configuration(namespace="default")
+    uninstall = helm_sdkpy.Uninstall(config)
     
     # Uninstall asynchronously
     result = await uninstall.run("my-nginx", wait=True, timeout=300)
@@ -250,19 +250,19 @@ async def main():
     print(f"""
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
-║              helmpy Complete Async Example                  ║
+║            helm-sdkpy Complete Async Example                ║
 ║          Python Bindings for Helm v4 (Async API)            ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 
-Version: {helmpy.__version__}
+Version: {helm_sdkpy.__version__}
 """)
     
     # Check if library is available
     try:
-        lib_version = helmpy.get_version()
+        lib_version = helm_sdkpy.get_version()
         print(f"Library version: {lib_version}\n")
-    except helmpy.HelmLibraryNotFound:
+    except helm_sdkpy.HelmLibraryNotFound:
         print("⚠ Library not built yet. Run 'just build-lib' first.")
         print("⚠ Showing API examples only\n")
     
@@ -280,7 +280,7 @@ Version: {helmpy.__version__}
     
     print_section("Summary")
     print("""
-This example demonstrated all major helmpy async features:
+This example demonstrated all major helm-sdkpy async features:
 
 ✓ Configuration management (namespace, kubeconfig, context)
 ✓ Async release management (install, upgrade, uninstall, rollback)

@@ -1,10 +1,10 @@
 # Development Guide
 
-This document provides detailed information for developers working on helmpy.
+This document provides detailed information for developers working on helm-sdkpy.
 
 ## Architecture
 
-helmpy follows a three-layer architecture:
+helm-sdkpy follows a three-layer architecture:
 
 1. **Go Shim Layer** (`go/shim/main.go`)
    - Wraps Helm v4 Go API
@@ -12,13 +12,13 @@ helmpy follows a three-layer architecture:
    - Handles memory management and error propagation
    - Thread-safe with mutex protection
 
-2. **Python FFI Layer** (`helmpy/_ffi.py`)
+2. **Python FFI Layer** (`helm_sdkpy/_ffi.py`)
    - Uses CFFI to interface with Go shared library
    - Handles library loading and discovery
    - Provides type conversion helpers
    - Manages error checking
 
-3. **Python API Layer** (`helmpy/actions.py`, `helmpy/chart.py`)
+3. **Python API Layer** (`helm_sdkpy/actions.py`, `helm_sdkpy/chart.py`)
    - Async-first Pythonic wrapper classes
    - Type hints for IDE support
    - Context manager support
@@ -38,8 +38,8 @@ helmpy follows a three-layer architecture:
 
 ```bash
 # Clone the repository
-git clone https://github.com/vantagecompute/helmpy.git
-cd helmpy
+git clone https://github.com/vantagecompute/helm-sdkpy.git
+cd helm-sdkpy
 
 # Install Python dependencies
 pip install -e ".[dev]"
@@ -88,7 +88,7 @@ This runs a multi-stage Docker build that:
 1. Sets up Go 1.22 build environment
 2. Downloads Helm v4 and all dependencies
 3. Compiles the Go shim to a shared library
-4. Extracts the library to `helmpy/_lib/linux-amd64/`
+4. Extracts the library to `helm_sdkpy/_lib/linux-amd64/`
 
 ### Local Build (Development)
 
@@ -96,7 +96,7 @@ For faster iteration during development:
 
 ```bash
 cd go/shim
-go build -buildmode=c-shared -o ../../helmpy/_lib/linux-amd64/libhelmpy.so main.go
+go build -buildmode=c-shared -o ../../helm_sdkpy/_lib/linux-amd64/libhelm-sdkpy.so main.go
 ```
 
 Note: This requires Go 1.22+ and all dependencies to be available locally.
@@ -122,21 +122,21 @@ Tests are located in the `tests/` directory. Follow these guidelines:
 
 1. **Import from top-level package**:
    ```python
-   import helmpy
-   from helmpy import Configuration, Install
+   import helm-sdkpy
+   from helm-sdkpy import Configuration, Install
    ```
 
 2. **Use pytest fixtures** for common setup:
    ```python
    @pytest.fixture
    def config():
-       return helmpy.Configuration(namespace="test")
+       return helm-sdkpy.Configuration(namespace="test")
    ```
 
 2. **Test exception handling**:
    ```python
    async def test_install_error():
-       with pytest.raises(helmpy.InstallError):
+       with pytest.raises(helm-sdkpy.InstallError):
            # Code that should raise
            await install.run(...)
    ```
@@ -170,22 +170,22 @@ Follow standard Go conventions:
 
 To add support for a new Helm action:
 
-1. **Add FFI definition** in `helmpy/_ffi.py`:
+1. **Add FFI definition** in `helm_sdkpy/_ffi.py`:
    ```python
    ffi.cdef("""
-       int helmpy_new_action(helmpy_handle handle, const char *param, char **result);
+       int helm-sdkpy_new_action(helm-sdkpy_handle handle, const char *param, char **result);
    """)
    ```
 
 2. **Implement Go function** in `go/shim/main.go`:
    ```go
-   //export helmpy_new_action
-   func helmpy_new_action(handle C.helmpy_handle, param *C.char, result **C.char) C.int {
+   //export helm-sdkpy_new_action
+   func helm-sdkpy_new_action(handle C.helm-sdkpy_handle, param *C.char, result **C.char) C.int {
        // Implementation
    }
    ```
 
-3. **Create Python wrapper** in `helmpy/actions.py` or `helmpy/chart.py`:
+3. **Create Python wrapper** in `helm_sdkpy/actions.py` or `helm_sdkpy/chart.py`:
    ```python
    class NewAction:
        def __init__(self, config: Configuration):
@@ -212,8 +212,8 @@ To add support for a new Helm action:
    
    @pytest.mark.asyncio
    async def test_new_action():
-       config = helmpy.Configuration(namespace="test")
-       action = helmpy.NewAction(config)
+       config = helm-sdkpy.Configuration(namespace="test")
+       action = helm-sdkpy.NewAction(config)
        result = await action.run("param")
        assert result is not None
    ```
@@ -222,7 +222,7 @@ To add support for a new Helm action:
 
 1. Update version in:
    - `pyproject.toml`
-   - `helmpy/__init__.py`
+   - `helm_sdkpy/__init__.py`
    - `go/shim/main.go` (versionCString)
 
 2. Build and test:
@@ -252,7 +252,7 @@ If you get `HelmLibraryNotFound`:
 
 1. Check if library exists:
    ```bash
-   ls -lh helmpy/_lib/linux-amd64/libhelmpy.so
+   ls -lh helm_sdkpy/_lib/linux-amd64/libhelm-sdkpy.so
    ```
 
 2. Rebuild if missing:
@@ -262,7 +262,7 @@ If you get `HelmLibraryNotFound`:
 
 3. Check library dependencies:
    ```bash
-   ldd helmpy/_lib/linux-amd64/libhelmpy.so
+   ldd helm_sdkpy/_lib/linux-amd64/libhelm-sdkpy.so
    ```
 
 ### Import Errors
@@ -276,7 +276,7 @@ If Python can't find the module:
 
 2. Or set PYTHONPATH:
    ```bash
-   export PYTHONPATH=/path/to/helmpy:$PYTHONPATH
+   export PYTHONPATH=/path/to/helm-sdkpy:$PYTHONPATH
    ```
 
 ### Go Build Errors

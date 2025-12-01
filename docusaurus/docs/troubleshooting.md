@@ -4,19 +4,19 @@ sidebar_position: 10
 
 # Troubleshooting
 
-Common issues and solutions when using helmpy.
+Common issues and solutions when using helm-sdkpy.
 
 ## Installation Issues
 
-### ImportError: No module named 'helmpy'
+### ImportError: No module named 'helm-sdkpy'
 
-**Problem**: helmpy is not installed or not in Python path.
+**Problem**: helm-sdkpy is not installed or not in Python path.
 
 **Solution**:
 ```bash
-pip install helmpy
+pip install helm-sdkpy
 # or
-uv add helmpy
+uv add helm-sdkpy
 ```
 
 ### HelmLibraryNotFound
@@ -24,15 +24,15 @@ uv add helmpy
 **Problem**: The native Helm library couldn't be found.
 
 **Solution**:
-1. Ensure helmpy is properly installed
+1. Ensure helm-sdkpy is properly installed
 2. Check if the library exists for your platform (Linux, macOS, Windows)
-3. Try reinstalling: `pip install --force-reinstall helmpy`
+3. Try reinstalling: `pip install --force-reinstall helm-sdkpy`
 
 ## Kubernetes Connection Issues
 
 ### Unable to connect to Kubernetes cluster
 
-**Problem**: helmpy can't connect to your Kubernetes cluster.
+**Problem**: helm-sdkpy can't connect to your Kubernetes cluster.
 
 **Solution**:
 ```python
@@ -40,7 +40,7 @@ uv add helmpy
 # kubectl cluster-info
 
 # Specify kubeconfig explicitly
-from helmpy import Configuration
+from helm_sdkpy import Configuration
 
 config = Configuration(
     namespace="default",
@@ -94,13 +94,13 @@ chart_path = "https://example.com/charts/mychart-1.0.0.tgz"
 **Solution**:
 ```python
 # Use upgrade instead
-from helmpy import Upgrade
+from helm_sdkpy import Upgrade
 
 upgrade = Upgrade(config)
 await upgrade.run(release_name="existing-release", chart_path="...")
 
 # Or uninstall first
-from helmpy import Uninstall
+from helm_sdkpy import Uninstall
 
 uninstall = Uninstall(config)
 await uninstall.run(release_name="existing-release")
@@ -207,7 +207,7 @@ values = {
 }
 
 # Verify values after installation
-from helmpy.actions import GetValues
+from helm_sdkpy.actions import GetValues
 
 get_values = GetValues(config)
 current_values = await get_values.run(
@@ -225,7 +225,7 @@ print(current_values)
 
 **Solution**:
 ```python
-from helmpy.repo import RepoAdd, RepoUpdate
+from helm_sdkpy.repo import RepoAdd, RepoUpdate
 
 # Add repository first
 repo_add = RepoAdd(config)
@@ -266,7 +266,7 @@ logging.basicConfig(level=logging.DEBUG)
 ### Check Helm library version
 
 ```python
-from helmpy._ffi import get_version
+from helm_sdkpy._ffi import get_version
 
 print(f"Helm version: {get_version()}")
 ```
@@ -274,7 +274,7 @@ print(f"Helm version: {get_version()}")
 ### Inspect release details
 
 ```python
-from helmpy.actions import Status, GetValues, History
+from helm_sdkpy.actions import Status, GetValues, History
 
 # Check status
 status = Status(config)
@@ -298,9 +298,9 @@ If you're still experiencing issues:
 
 1. Check the [API Reference](api/actions) for correct usage
 2. Review [Examples](examples/chart-install) for working code
-3. Search [GitHub Issues](https://github.com/vantagecompute/helmpy/issues)
+3. Search [GitHub Issues](https://github.com/vantagecompute/helm_sdkpy/issues)
 4. Open a new issue with:
-   - helmpy version
+   - helm-sdkpy version
    - Python version
    - Operating system
    - Minimal reproducible example

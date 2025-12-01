@@ -4,14 +4,14 @@ sidebar_position: 1
 
 # Installing Charts
 
-Learn how to install Helm charts to Kubernetes using helmpy.
+Learn how to install Helm charts to Kubernetes using helm-sdkpy.
 
 ## Basic Install
 
 Install a chart with default values:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 # Create chart reference
 chart = Chart(
@@ -34,7 +34,7 @@ print(f"Installed: {result}")
 Override default chart values:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(
     name="my-app",
@@ -73,7 +73,7 @@ result = chart.install(
 Load values from YAML file:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 import yaml
 
 # Read values file
@@ -114,7 +114,7 @@ readReplicas:
 Install a specific chart version:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(
     name="prometheus",
@@ -135,7 +135,7 @@ result = chart.install(
 Wait for resources to be ready:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(
     name="mysql",
@@ -157,7 +157,7 @@ result = chart.install(
 Preview installation without applying:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(
     name="app",
@@ -181,7 +181,7 @@ Use async/await for concurrent operations:
 
 ```python
 import asyncio
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 async def install_chart(name: str, chart_name: str, repo: str):
     chart = Chart(
@@ -215,7 +215,7 @@ asyncio.run(main())
 Install from a local chart directory:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(
     name="my-local-app",
@@ -233,7 +233,7 @@ result = chart.install(
 Ensure chart dependencies are updated:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(
     name="complex-app",
@@ -255,7 +255,7 @@ result = chart.install(
 Install to a specific Kubernetes context:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(
     name="app",
@@ -275,8 +275,8 @@ result = chart.install(
 Full workflow with error handling:
 
 ```python
-from helmpy import Chart
-from helmpy.exceptions import HelmError
+from helm_sdkpy import Chart
+from helm_sdkpy.exceptions import HelmError
 import sys
 
 def install_application():
@@ -388,8 +388,8 @@ if __name__ == "__main__":
 ## Error Handling
 
 ```python
-from helmpy import Chart
-from helmpy.exceptions import HelmError, InstallError
+from helm_sdkpy import Chart
+from helm_sdkpy.exceptions import HelmError, InstallError
 
 chart = Chart(
     name="app",

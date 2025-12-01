@@ -17,7 +17,7 @@
 Async cert-manager Installation Example
 
 This example demonstrates installing cert-manager from the Jetstack repository
-using helmpy's async API. cert-manager is a powerful certificate management 
+using helm-sdkpy's async API. cert-manager is a powerful certificate management 
 controller for Kubernetes that automates the management and issuance of TLS 
 certificates.
 
@@ -45,7 +45,7 @@ import subprocess
 import sys
 import tempfile
 
-import helmpy
+import helm_sdkpy
 
 
 def print_section(title):
@@ -60,7 +60,7 @@ def print_banner():
     print("""
 ╔═══════════════════════════════════════════════════════════════════╗
 ║                                                                   ║
-║         Async cert-manager Installation with helmpy              ║
+║         Async cert-manager Installation with helm-sdkpy              ║
 ║           Automated Certificate Management for Kubernetes        ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝
@@ -68,15 +68,15 @@ def print_banner():
 
 
 async def main():
-    """Install cert-manager using helmpy async API."""
+    """Install cert-manager using helm-sdkpy async API."""
     print_banner()
     
-    print(f"helmpy version: {helmpy.__version__}")
+    print(f"helm-sdkpy version: {helm_sdkpy.__version__}")
     
     try:
-        lib_version = helmpy.get_version()
+        lib_version = helm_sdkpy.get_version()
         print(f"Library version: {lib_version}")
-    except helmpy.HelmLibraryNotFound:
+    except helm_sdkpy.HelmLibraryNotFound:
         print("✗ Helm library not found. Please build the library first:")
         print("  Run: just build-wheel")
         return 1
@@ -118,14 +118,14 @@ async def main():
         print(f"✓ Kubeconfig written to: {kubeconfig_file.name}")
         
         # cert-manager should be installed in its own namespace
-        config = helmpy.Configuration(
+        config = helm_sdkpy.Configuration(
             namespace="cert-manager",
             kubeconfig=kubeconfig_file.name
         )
         print("✓ Created Helm configuration")
         print(f"  Namespace: cert-manager")
         print(f"  Note: The namespace will be created if it doesn't exist")
-    except helmpy.ConfigurationError as e:
+    except helm_sdkpy.ConfigurationError as e:
         print(f"✗ Configuration error: {e}")
         print("  Make sure you have access to a Kubernetes cluster")
         return 1
@@ -134,7 +134,7 @@ async def main():
     print_section("Step 3: Add Jetstack Helm Repository (Async)")
     
     try:
-        repo_add = helmpy.RepoAdd(config)
+        repo_add = helm_sdkpy.RepoAdd(config)
         
         print("Adding repository: jetstack")
         print("  URL: https://charts.jetstack.io")
@@ -146,7 +146,7 @@ async def main():
         
         print("✓ Jetstack repository added successfully")
         
-    except helmpy.HelmError as e:
+    except helm_sdkpy.HelmError as e:
         if "already exists" in str(e).lower():
             print("✓ Jetstack repository already exists")
         else:
@@ -157,14 +157,14 @@ async def main():
     print_section("Step 4: Update Repository Index (Async)")
     
     try:
-        repo_update = helmpy.RepoUpdate(config)
+        repo_update = helm_sdkpy.RepoUpdate(config)
         
         print("Updating repository indexes...")
         await repo_update.run()
         
         print("✓ Repository indexes updated successfully")
         
-    except helmpy.HelmError as e:
+    except helm_sdkpy.HelmError as e:
         print(f"✗ Failed to update repository: {e}")
         return 1
     
@@ -172,7 +172,7 @@ async def main():
     print_section("Step 5: Install cert-manager (Async)")
     
     try:
-        install = helmpy.Install(config)
+        install = helm_sdkpy.Install(config)
         
         # cert-manager installation values
         values = {
@@ -207,7 +207,7 @@ async def main():
         print(f"  Version: {result['version']}")
         print(f"  Chart Version: {result['chart']['metadata']['version']}")
         
-    except helmpy.InstallError as e:
+    except helm_sdkpy.InstallError as e:
         print(f"✗ Installation failed: {e}")
         print("\nTroubleshooting:")
         print("  1. Make sure you have cluster-admin permissions")
@@ -219,7 +219,7 @@ async def main():
     print_section("Step 6: Verify Installation (Async)")
     
     try:
-        status = helmpy.Status(config)
+        status = helm_sdkpy.Status(config)
         
         print("Checking installation status asynchronously...")
         result = await status.run("cert-manager")
@@ -232,7 +232,7 @@ async def main():
         resources = result['manifest'].split('---')
         print(f"  Deployed Resources: {len([r for r in resources if r.strip()])}")
         
-    except helmpy.ReleaseError as e:
+    except helm_sdkpy.ReleaseError as e:
         print(f"⚠ Could not verify status: {e}")
     
     # Step 7: Display Post-Installation Information
@@ -323,11 +323,11 @@ cert-manager is now ready to manage your certificates!
 To uninstall (if needed):
     python -c "
     import asyncio
-    import helmpy
+    import helm_sdkpy
     
     async def uninstall():
-        config = helmpy.Configuration(namespace='cert-manager')
-        uninstall = helmpy.Uninstall(config)
+        config = helm_sdkpy.Configuration(namespace='cert-manager')
+        uninstall = helm_sdkpy.Uninstall(config)
         await uninstall.run('cert-manager', wait=True)
     
     asyncio.run(uninstall())

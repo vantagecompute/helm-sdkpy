@@ -4,12 +4,12 @@ sidebar_position: 2
 
 # Quick Start
 
-Get up and running with helmpy in minutes.
+Get up and running with helm-sdkpy in minutes.
 
-## Install helmpy
+## Install helm-sdkpy
 
 ```bash
-pip install helmpy
+pip install helm-sdkpy
 ```
 
 ## Basic Usage
@@ -18,7 +18,7 @@ pip install helmpy
 
 ```python
 import asyncio
-from helmpy import Configuration, Install
+from helm_sdkpy import Configuration, Install
 
 async def install_chart():
     # Create configuration
@@ -45,8 +45,8 @@ asyncio.run(install_chart())
 
 ```python
 import asyncio
-from helmpy import Configuration
-from helmpy.actions import List
+from helm_sdkpy import Configuration
+from helm_sdkpy.actions import List
 
 async def list_releases():
     config = Configuration(namespace="default")
@@ -64,7 +64,7 @@ asyncio.run(list_releases())
 
 ```python
 import asyncio
-from helmpy import Configuration, Upgrade
+from helm_sdkpy import Configuration, Upgrade
 
 async def upgrade_release():
     config = Configuration(namespace="default")
@@ -86,8 +86,8 @@ asyncio.run(upgrade_release())
 
 ```python
 import asyncio
-from helmpy import Configuration
-from helmpy.actions import Status
+from helm_sdkpy import Configuration
+from helm_sdkpy.actions import Status
 
 async def check_status():
     config = Configuration(namespace="default")
@@ -105,7 +105,7 @@ asyncio.run(check_status())
 
 ```python
 import asyncio
-from helmpy import Configuration, Uninstall
+from helm_sdkpy import Configuration, Uninstall
 
 async def uninstall_release():
     config = Configuration(namespace="default")
@@ -127,7 +127,7 @@ Run multiple operations in parallel using `asyncio.gather`:
 
 ```python
 import asyncio
-from helmpy import Configuration, Install
+from helm_sdkpy import Configuration, Install
 
 async def install_multiple():
     config = Configuration(namespace="default")
@@ -172,7 +172,7 @@ result = await install.run(
 ### Getting Values
 
 ```python
-from helmpy.actions import GetValues
+from helm_sdkpy.actions import GetValues
 
 config = Configuration(namespace="default")
 get_values = GetValues(config)
@@ -188,7 +188,7 @@ print(values)
 ## Repository Management
 
 ```python
-from helmpy.repo import RepoAdd, RepoUpdate, RepoList
+from helm_sdkpy.repo import RepoAdd, RepoUpdate, RepoList
 
 async def manage_repos():
     config = Configuration()
@@ -219,4 +219,4 @@ asyncio.run(manage_repos())
 - [Full Usage Guide](usage)
 - [API Reference](api/actions)
 - [Examples](examples/chart-install)
-- [Architecture](architecture/helmpy-architecture)
+- [Architecture](architecture/helm-sdkpy-architecture)

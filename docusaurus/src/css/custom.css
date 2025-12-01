@@ -1,5 +1,5 @@
 /**
- * helmpy Documentation Custom Styles
+ * helm-sdkpy Documentation Custom Styles
  */
 
 /* Root variables for Vantage brand colors */
@@ -115,7 +115,7 @@
 
 /* Create centered title using pseudo-element */
 .navbar__inner::after {
-  content: "helmpy Documentation";
+  content: "helm-sdkpy Documentation";
   position: absolute;
   left: 50%;
   top: 50%;

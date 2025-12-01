@@ -152,7 +152,7 @@ wheels = [
 ]
 
 [[package]]
-name = "helmpy"
+name = "helm-sdkpy"
 version = "0.0.1"
 source = { editable = "." }
 dependencies = [

@@ -16,7 +16,7 @@
 """
 Async Installation Example
 
-This example demonstrates using helmpy with Python asyncio for non-blocking
+This example demonstrates using helm-sdkpy with Python asyncio for non-blocking
 Helm operations. This is useful for web applications, event loops, or when
 managing multiple installations concurrently.
 """
@@ -26,7 +26,7 @@ import subprocess
 import sys
 import tempfile
 
-import helmpy
+import helm_sdkpy
 
 
 async def install_chart_async(name: str, chart: str, namespace: str = "default"):
@@ -42,14 +42,14 @@ async def install_chart_async(name: str, chart: str, namespace: str = "default")
         kubeconfig_file = f.name
     
     print(f"[{name}] Creating configuration...")
-    config = helmpy.Configuration(namespace=namespace, kubeconfig=kubeconfig_file)
+    config = helm_sdkpy.Configuration(namespace=namespace, kubeconfig=kubeconfig_file)
     
     print(f"[{name}] Starting async installation...")
     print(f"[{name}] Chart: {chart}")
     print(f"[{name}] Namespace: {namespace}")
     print(f"[{name}] Wait enabled: will wait for resources to be ready")
     
-    install = helmpy.Install(config)
+    install = helm_sdkpy.Install(config)
     
     try:
         # Use async run for non-blocking operation with wait strategy
@@ -67,7 +67,7 @@ async def install_chart_async(name: str, chart: str, namespace: str = "default")
         print(f"[{name}]   Version: {result['version']}")
         return result
         
-    except helmpy.InstallError as e:
+    except helm_sdkpy.InstallError as e:
         print(f"[{name}] ✗ Installation failed: {e}")
         raise
 
@@ -85,12 +85,12 @@ async def uninstall_chart_async(name: str, namespace: str = "default"):
         kubeconfig_file = f.name
     
     print(f"[{name}] Creating configuration...")
-    config = helmpy.Configuration(namespace=namespace, kubeconfig=kubeconfig_file)
+    config = helm_sdkpy.Configuration(namespace=namespace, kubeconfig=kubeconfig_file)
     
     print(f"[{name}] Starting async uninstall...")
     print(f"[{name}] Wait enabled: will wait for resources to be deleted")
     
-    uninstall = helmpy.Uninstall(config)
+    uninstall = helm_sdkpy.Uninstall(config)
     
     try:
         # Use async run for non-blocking operation with wait strategy
@@ -103,7 +103,7 @@ async def uninstall_chart_async(name: str, namespace: str = "default"):
         print(f"[{name}] ✓ Uninstall complete!")
         return result
         
-    except helmpy.UninstallError as e:
+    except helm_sdkpy.UninstallError as e:
         print(f"[{name}] ✗ Uninstall failed: {e}")
         raise
 
@@ -189,7 +189,7 @@ async def main():
     print("""
 ╔═══════════════════════════════════════════════════════════════════╗
 ║                                                                   ║
-║              Async Installation with helmpy                       ║
+║              Async Installation with helm-sdkpy                       ║
 ║          Non-blocking Helm Operations with Python asyncio        ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝
@@ -202,8 +202,8 @@ This example demonstrates:
 
 """)
     
-    print(f"helmpy version: {helmpy.__version__}")
-    print(f"Library version: {helmpy.get_version()}")
+    print(f"helm-sdkpy version: {helm_sdkpy.__version__}")
+    print(f"Library version: {helm_sdkpy.get_version()}")
     print()
     
     try:

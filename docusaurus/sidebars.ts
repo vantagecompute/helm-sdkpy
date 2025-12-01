@@ -13,7 +13,7 @@ import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
  Create as many sidebars as you want.
  */
 const sidebars: SidebarsConfig = {
-  // Manually curated sidebar for helmpy documentation
+  // Manually curated sidebar for helm-sdkpy documentation
   tutorialSidebar: [
     'index', // Homepage/Overview
     {
@@ -31,7 +31,7 @@ const sidebars: SidebarsConfig = {
       link: {
         type: 'generated-index',
         title: 'Architecture Documentation',
-        description: 'Detailed architecture documentation for helmpy',
+        description: 'Detailed architecture documentation for helm-sdkpy',
       },
       items: [
         {
@@ -46,7 +46,7 @@ const sidebars: SidebarsConfig = {
       link: {
         type: 'generated-index',
         title: 'Examples',
-        description: 'Practical examples demonstrating helmpy usage',
+        description: 'Practical examples demonstrating helm-sdkpy usage',
       },
       items: [
         {
@@ -61,7 +61,7 @@ const sidebars: SidebarsConfig = {
       link: {
         type: 'generated-index',
         title: 'API Documentation',
-        description: 'Complete API reference for all helmpy classes and methods',
+        description: 'Complete API reference for all helm-sdkpy classes and methods',
       },
       items: [
         {

@@ -12,21 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Basic tests for helmpy package."""
+"""Basic tests for helm-sdkpy package."""
 
 
-import helmpy
+import helm_sdkpy
 
 
 def test_version():
     """Test that version is accessible."""
-    assert helmpy.__version__ is not None
-    assert isinstance(helmpy.__version__, str)
+    assert helm_sdkpy.__version__ is not None
+    assert isinstance(helm_sdkpy.__version__, str)
 
 
 def test_imports():
     """Test that all main classes can be imported."""
-    from helmpy import (
+    from helm_sdkpy import (
         Configuration,
         GetValues,
         History,
@@ -69,7 +69,7 @@ def test_imports():
 
 def test_exceptions():
     """Test that exception classes are available."""
-    from helmpy import (
+    from helm_sdkpy import (
         ChartError,
         ConfigurationError,
         HelmError,

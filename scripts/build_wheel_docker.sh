@@ -15,19 +15,19 @@
 
 set -e
 
-echo "==> Building helmpy wheel using Docker"
+echo "==> Building helm-sdkpy wheel using Docker"
 
 # Build the wheel-build stage
-docker build --target wheel-build --tag helmpy-wheel-builder .
+docker build --target wheel-build --tag helm-sdkpy-wheel-builder .
 
 # Create a container from the image
-docker create --name helmpy-wheel-extract helmpy-wheel-builder
+docker create --name helm-sdkpy-wheel-extract helm-sdkpy-wheel-builder
 
 # Extract the wheel
-docker cp helmpy-wheel-extract:/build/dist/. ./dist/
+docker cp helm-sdkpy-wheel-extract:/build/dist/. ./dist/
 
 # Clean up
-docker rm helmpy-wheel-extract
+docker rm helm-sdkpy-wheel-extract
 
 echo "==> Wheel built successfully"
 ls -lh dist/*.whl

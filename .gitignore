@@ -140,7 +140,7 @@ cython_debug/
 # Go build artifacts
 go/shim/*.h
 go/shim/*.so
-helmpy/_lib/
+helm_sdkpy/_lib/
 
 # Vendor libraries
 vendor/install/

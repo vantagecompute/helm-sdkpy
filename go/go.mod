@@ -1,4 +1,4 @@
-module github.com/vantagecompute/helmpy
+module github.com/vantagecompute/helm-sdkpy
 
 go 1.24.0
 

@@ -4,14 +4,14 @@ sidebar_position: 2
 
 # Upgrading Charts
 
-Learn how to upgrade existing Helm releases with helmpy.
+Learn how to upgrade existing Helm releases with helm-sdkpy.
 
 ## Basic Upgrade
 
 Upgrade a release with new values:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(
     name="nginx",
@@ -33,7 +33,7 @@ print(f"Upgraded: {result}")
 Update configuration during upgrade:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(
     name="webapp",
@@ -68,7 +68,7 @@ result = chart.upgrade(
 Upgrade to a specific chart version:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(
     name="prometheus",
@@ -89,8 +89,8 @@ result = chart.upgrade(
 Install if release doesn't exist, upgrade if it does:
 
 ```python
-from helmpy import Chart
-from helmpy.exceptions import NotFoundError
+from helm_sdkpy import Chart
+from helm_sdkpy.exceptions import NotFoundError
 
 chart = Chart(
     name="redis",
@@ -128,7 +128,7 @@ except NotFoundError:
 Rollback automatically on failure:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(
     name="database",
@@ -154,7 +154,7 @@ result = chart.upgrade(
 Force resource updates:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(
     name="app",
@@ -174,7 +174,7 @@ result = chart.upgrade(
 Clean up old resources during upgrade:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(
     name="webapp",
@@ -195,7 +195,7 @@ result = chart.upgrade(
 Preview upgrade without applying:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(
     name="app",
@@ -219,7 +219,7 @@ print(result)
 Keep existing values and add new ones:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(
     name="webapp",
@@ -250,7 +250,7 @@ result = chart.upgrade(
 Discard previous values and use only new ones:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(
     name="app",
@@ -280,7 +280,7 @@ Use async/await for concurrent upgrades:
 
 ```python
 import asyncio
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 async def upgrade_chart(name: str, chart_name: str, repo: str, version: str):
     chart = Chart(
@@ -315,7 +315,7 @@ asyncio.run(main())
 Upgrade with rolling update strategy:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 chart = Chart(
     name="webapp",
@@ -349,7 +349,7 @@ result = chart.upgrade(
 Upgrade with blue-green deployment pattern:
 
 ```python
-from helmpy import Chart
+from helm_sdkpy import Chart
 
 # Deploy green version
 green_chart = Chart(
@@ -387,8 +387,8 @@ blue_chart.uninstall(namespace="production")
 Full upgrade workflow with validation:
 
 ```python
-from helmpy import Chart
-from helmpy.exceptions import HelmError
+from helm_sdkpy import Chart
+from helm_sdkpy.exceptions import HelmError
 import sys
 import time
 
@@ -499,8 +499,8 @@ if __name__ == "__main__":
 ## Error Handling
 
 ```python
-from helmpy import Chart
-from helmpy.exceptions import HelmError, UpgradeError
+from helm_sdkpy import Chart
+from helm_sdkpy.exceptions import HelmError, UpgradeError
 
 chart = Chart(
     name="app",
