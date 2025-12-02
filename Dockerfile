@@ -58,12 +58,13 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.local/bin:${PATH}"
 
 # Build the wheel
-RUN uv build --wheel
+RUN uv build
 
-# List built wheels
-RUN ls -lh dist/*.whl
+# List built wheel and sdist
+RUN ls -lh dist/
 
 # Stage 4: Extract artifacts
 FROM scratch AS artifacts
 COPY --from=wheel-build /build/dist/*.whl /
+COPY --from=wheel-build /build/dist/*.tar.gz /
 COPY --from=go-build /build/helm_sdkpy/_lib/linux-amd64/libhelm_sdkpy.so /
