@@ -54,10 +54,8 @@ dev = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["helm_sdkpy"]
-# Include binary artifacts (shared libraries)
-artifacts = [
-    "helm_sdkpy/_lib/**/*",
-]
+# Force include binary artifacts (shared libraries) even if not in git
+force-include = { "helm_sdkpy/_lib" = "helm_sdkpy/_lib" }
 
 # Source distribution - mirror wheel contents plus build requirements
 [tool.hatch.build.targets.sdist]
@@ -68,10 +66,8 @@ only-include = [
     "README.md", 
     "LICENSE",
 ]
-# Include binary files in sdist
-artifacts = [
-    "helm_sdkpy/_lib/**/*",
-]
+# Force include binary files in sdist even if not in git
+force-include = { "helm_sdkpy/_lib" = "helm_sdkpy/_lib" }
 
 [tool.hatch.metadata]
 allow-direct-references = true
