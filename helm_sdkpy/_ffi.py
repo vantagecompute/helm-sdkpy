@@ -186,7 +186,9 @@ def get_library():
         try:
             _library = ffi.dlopen(lib_path)
         except OSError as e:
-            raise HelmLibraryNotFound(f"Failed to load helm_sdkpy library from {lib_path}: {e}") from e
+            raise HelmLibraryNotFound(
+                f"Failed to load helm_sdkpy library from {lib_path}: {e}"
+            ) from e
 
         return _library
 
