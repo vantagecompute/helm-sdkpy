@@ -106,7 +106,9 @@ class Show:
             result_json = ffi.new("char **")
             path_cstr = ffi.new("char[]", chart_path.encode("utf-8"))
 
-            result = self._lib.helm_sdkpy_show_chart(self.config._handle_value, path_cstr, result_json)
+            result = self._lib.helm_sdkpy_show_chart(
+                self.config._handle_value, path_cstr, result_json
+            )
 
             if result != 0:
                 check_error(result)
@@ -135,7 +137,9 @@ class Show:
             result_json = ffi.new("char **")
             path_cstr = ffi.new("char[]", chart_path.encode("utf-8"))
 
-            result = self._lib.helm_sdkpy_show_values(self.config._handle_value, path_cstr, result_json)
+            result = self._lib.helm_sdkpy_show_values(
+                self.config._handle_value, path_cstr, result_json
+            )
 
             if result != 0:
                 check_error(result)

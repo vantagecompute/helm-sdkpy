@@ -14,7 +14,6 @@
 
 """Basic tests for helm-sdkpy package."""
 
-
 import helm_sdkpy
 
 
