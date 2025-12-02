@@ -133,6 +133,14 @@ func helm_sdkpy_config_create(namespace *C.char, kubeconfig *C.char, kubecontext
 	if err != nil {
 		return setError(fmt.Errorf("failed to initialize helm config: %w", err))
 	}
+	
+	// Configure the Kubernetes client to use Ignore field validation
+	// This allows charts with managedFields in templates (like rook-ceph v1.18.x)
+	// to install successfully without strict Kubernetes API validation errors
+	if cfg.KubeClient != nil {
+		// Note: In Helm v4, field validation is handled via client options during Create/Update
+		// We'll configure this in the Install action instead
+	}
 
 	state := &configState{
 		cfg:  cfg,
@@ -181,6 +189,14 @@ func helm_sdkpy_install(handle C.helm_sdkpy_handle, release_name *C.char, chart_
 	client.ReleaseName = releaseName
 	client.Namespace = state.envs.Namespace()
 	client.CreateNamespace = create_namespace != 0
+	
+	// Use client-side apply instead of server-side to avoid strict field validation
+	// Server-side apply (default in Helm v4) enforces strict field validation which
+	// rejects charts with managedFields in templates (like rook-ceph v1.18.x)
+	client.ServerSideApply = false
+	
+	// Disable OpenAPI validation as well
+	client.DisableOpenAPIValidation = true
 	
 	// Set version if provided
 	if chartVersion != "" {
