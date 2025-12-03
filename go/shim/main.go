@@ -38,6 +38,7 @@ import (
 	"helm.sh/helm/v4/pkg/cli"
 	"helm.sh/helm/v4/pkg/getter"
 	"helm.sh/helm/v4/pkg/kube"
+	"helm.sh/helm/v4/pkg/registry"
 	"helm.sh/helm/v4/pkg/repo/v1"
 )
 
@@ -141,6 +142,18 @@ func helm_sdkpy_config_create(namespace *C.char, kubeconfig *C.char, kubecontext
 		// Note: In Helm v4, field validation is handled via client options during Create/Update
 		// We'll configure this in the Install action instead
 	}
+
+	// Initialize registry client for OCI operations
+	registryClient, err := registry.NewClient(
+		registry.ClientOptDebug(false),
+		registry.ClientOptEnableCache(true),
+		registry.ClientOptWriter(os.Stdout),
+		registry.ClientOptCredentialsFile(envs.RegistryConfig),
+	)
+	if err != nil {
+		return setError(fmt.Errorf("failed to initialize registry client: %w", err))
+	}
+	cfg.RegistryClient = registryClient
 
 	state := &configState{
 		cfg:  cfg,
