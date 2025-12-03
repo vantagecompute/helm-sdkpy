@@ -960,6 +960,152 @@ func helm_sdkpy_repo_update(handle C.helm_sdkpy_handle, name *C.char) C.int {
 	return 0
 }
 
+// Registry login action
+
+//export helm_sdkpy_registry_login
+func helm_sdkpy_registry_login(handle C.helm_sdkpy_handle, hostname *C.char, username *C.char, password *C.char, options_json *C.char) C.int {
+	state, err := getConfig(handle)
+	if err != nil {
+		return setError(err)
+	}
+
+	state.mu.Lock()
+	defer state.mu.Unlock()
+
+	host := C.GoString(hostname)
+	user := C.GoString(username)
+	pass := C.GoString(password)
+
+	// Parse options
+	var options struct {
+		CertFile              string `json:"cert_file"`
+		KeyFile               string `json:"key_file"`
+		CAFile                string `json:"ca_file"`
+		Insecure              bool   `json:"insecure"`
+		PlainHTTP             bool   `json:"plain_http"`
+	}
+
+	optionsStr := C.GoString(options_json)
+	if optionsStr != "" {
+		if err := json.Unmarshal([]byte(optionsStr), &options); err != nil {
+			return setError(fmt.Errorf("failed to parse options: %w", err))
+		}
+	}
+
+	// Create registry login action
+	client := action.NewRegistryLogin(state.cfg)
+
+	// Build options slice
+	var loginOpts []action.RegistryLoginOpt
+	
+	if options.CertFile != "" {
+		loginOpts = append(loginOpts, action.WithCertFile(options.CertFile))
+	}
+	if options.KeyFile != "" {
+		loginOpts = append(loginOpts, action.WithKeyFile(options.KeyFile))
+	}
+	if options.CAFile != "" {
+		loginOpts = append(loginOpts, action.WithCAFile(options.CAFile))
+	}
+	if options.Insecure {
+		loginOpts = append(loginOpts, action.WithInsecure(options.Insecure))
+	}
+	if options.PlainHTTP {
+		loginOpts = append(loginOpts, action.WithPlainHTTPLogin(options.PlainHTTP))
+	}
+
+	// Run the login
+	err = client.Run(os.Stdout, host, user, pass, loginOpts...)
+	if err != nil {
+		return setError(fmt.Errorf("registry login failed: %w", err))
+	}
+
+	return 0
+}
+
+// Registry logout action
+
+//export helm_sdkpy_registry_logout
+func helm_sdkpy_registry_logout(handle C.helm_sdkpy_handle, hostname *C.char) C.int {
+	state, err := getConfig(handle)
+	if err != nil {
+		return setError(err)
+	}
+
+	state.mu.Lock()
+	defer state.mu.Unlock()
+
+	host := C.GoString(hostname)
+
+	// Create registry logout action
+	client := action.NewRegistryLogout(state.cfg)
+
+	// Run the logout
+	err = client.Run(os.Stdout, host)
+	if err != nil {
+		return setError(fmt.Errorf("registry logout failed: %w", err))
+	}
+
+	return 0
+}
+
+// Push action (for pushing charts to OCI registries)
+
+//export helm_sdkpy_push
+func helm_sdkpy_push(handle C.helm_sdkpy_handle, chart_ref *C.char, remote *C.char, options_json *C.char) C.int {
+	state, err := getConfig(handle)
+	if err != nil {
+		return setError(err)
+	}
+
+	state.mu.Lock()
+	defer state.mu.Unlock()
+
+	chartRef := C.GoString(chart_ref)
+	remoteRef := C.GoString(remote)
+
+	// Parse options
+	var options struct {
+		CertFile              string `json:"cert_file"`
+		KeyFile               string `json:"key_file"`
+		CAFile                string `json:"ca_file"`
+		InsecureSkipTLSVerify bool   `json:"insecure_skip_tls_verify"`
+		PlainHTTP             bool   `json:"plain_http"`
+	}
+
+	optionsStr := C.GoString(options_json)
+	if optionsStr != "" {
+		if err := json.Unmarshal([]byte(optionsStr), &options); err != nil {
+			return setError(fmt.Errorf("failed to parse options: %w", err))
+		}
+	}
+
+	// Create push action
+	var pushOpts []action.PushOpt
+	pushOpts = append(pushOpts, action.WithPushConfig(state.cfg))
+	
+	if options.CertFile != "" || options.KeyFile != "" || options.CAFile != "" {
+		pushOpts = append(pushOpts, action.WithTLSClientConfig(options.CertFile, options.KeyFile, options.CAFile))
+	}
+	if options.InsecureSkipTLSVerify {
+		pushOpts = append(pushOpts, action.WithInsecureSkipTLSVerify(options.InsecureSkipTLSVerify))
+	}
+	if options.PlainHTTP {
+		pushOpts = append(pushOpts, action.WithPlainHTTP(options.PlainHTTP))
+	}
+
+	client := action.NewPushWithOpts(pushOpts...)
+	client.Settings = state.envs
+
+	// Run the push
+	_, err = client.Run(chartRef, remoteRef)
+	if err != nil {
+		return setError(fmt.Errorf("push failed: %w", err))
+	}
+
+	return 0
+}
+
 func main() {
 	// Required for CGO shared library
 }

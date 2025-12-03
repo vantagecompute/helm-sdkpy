@@ -553,3 +553,142 @@ class History:
                 raise ReleaseError(f"Failed to parse history result: {e}") from e
 
         return await asyncio.to_thread(_history)
+
+
+class RegistryLogin:
+    """Helm registry login action.
+
+    Logs into an OCI registry for chart operations.
+
+    Args:
+        config: Helm configuration object
+
+    Example:
+        >>> import asyncio
+        >>> config = Configuration()
+        >>> registry_login = RegistryLogin(config)
+        >>> asyncio.run(registry_login.run(
+        ...     hostname="ghcr.io",
+        ...     username="myuser",
+        ...     password="mytoken"
+        ... ))
+        >>> # With TLS configuration
+        >>> asyncio.run(registry_login.run(
+        ...     hostname="registry.example.com",
+        ...     username="user",
+        ...     password="pass",
+        ...     cert_file="/path/to/cert.pem",
+        ...     key_file="/path/to/key.pem",
+        ...     ca_file="/path/to/ca.pem"
+        ... ))
+    """
+
+    def __init__(self, config: Configuration):
+        self.config = config
+        self._lib = get_library()
+
+    async def run(
+        self,
+        hostname: str,
+        username: str,
+        password: str,
+        cert_file: str | None = None,
+        key_file: str | None = None,
+        ca_file: str | None = None,
+        insecure: bool = False,
+        plain_http: bool = False,
+    ) -> None:
+        """Login to a registry asynchronously.
+
+        Args:
+            hostname: Registry hostname (e.g., "ghcr.io", "registry.example.com")
+            username: Registry username
+            password: Registry password or token
+            cert_file: Path to client certificate file for TLS
+            key_file: Path to client key file for TLS
+            ca_file: Path to CA certificate file for TLS verification
+            insecure: Skip TLS certificate verification
+            plain_http: Use HTTP instead of HTTPS
+
+        Raises:
+            RegistryError: If login fails
+        """
+        from .exceptions import RegistryError
+
+        def _registry_login():
+            hostname_cstr = ffi.new("char[]", hostname.encode("utf-8"))
+            username_cstr = ffi.new("char[]", username.encode("utf-8"))
+            password_cstr = ffi.new("char[]", password.encode("utf-8"))
+
+            # Build options JSON
+            options = {}
+            if cert_file:
+                options["cert_file"] = cert_file
+            if key_file:
+                options["key_file"] = key_file
+            if ca_file:
+                options["ca_file"] = ca_file
+            if insecure:
+                options["insecure"] = insecure
+            if plain_http:
+                options["plain_http"] = plain_http
+
+            options_json = json.dumps(options)
+            options_cstr = ffi.new("char[]", options_json.encode("utf-8"))
+
+            result = self._lib.helm_sdkpy_registry_login(
+                self.config._handle_value,
+                hostname_cstr,
+                username_cstr,
+                password_cstr,
+                options_cstr,
+            )
+
+            if result != 0:
+                check_error(result)
+
+        return await asyncio.to_thread(_registry_login)
+
+
+class RegistryLogout:
+    """Helm registry logout action.
+
+    Logs out from an OCI registry.
+
+    Args:
+        config: Helm configuration object
+
+    Example:
+        >>> import asyncio
+        >>> config = Configuration()
+        >>> registry_logout = RegistryLogout(config)
+        >>> asyncio.run(registry_logout.run(hostname="ghcr.io"))
+    """
+
+    def __init__(self, config: Configuration):
+        self.config = config
+        self._lib = get_library()
+
+    async def run(self, hostname: str) -> None:
+        """Logout from a registry asynchronously.
+
+        Args:
+            hostname: Registry hostname (e.g., "ghcr.io", "registry.example.com")
+
+        Raises:
+            RegistryError: If logout fails
+        """
+        from .exceptions import RegistryError
+
+        def _registry_logout():
+            hostname_cstr = ffi.new("char[]", hostname.encode("utf-8"))
+
+            result = self._lib.helm_sdkpy_registry_logout(
+                self.config._handle_value,
+                hostname_cstr,
+            )
+
+            if result != 0:
+                check_error(result)
+
+        return await asyncio.to_thread(_registry_logout)

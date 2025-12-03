@@ -300,3 +300,91 @@ class Package:
             return string_from_c(result_path[0])
 
         return await asyncio.to_thread(_package)
+
+
+class Push:
+    """Helm push action.
+
+    Pushes a chart to an OCI registry.
+
+    Args:
+        config: Helm configuration object
+
+    Example:
+        >>> import asyncio
+        >>> config = Configuration()
+        >>> push = Push(config)
+        >>> asyncio.run(push.run(
+        ...     chart_path="./mychart-1.0.0.tgz",
+        ...     remote="oci://ghcr.io/myorg/charts"
+        ... ))
+        >>> # With TLS configuration
+        >>> asyncio.run(push.run(
+        ...     chart_path="./mychart-1.0.0.tgz",
+        ...     remote="oci://registry.example.com/charts",
+        ...     cert_file="/path/to/cert.pem",
+        ...     key_file="/path/to/key.pem",
+        ...     ca_file="/path/to/ca.pem"
+        ... ))
+    """
+
+    def __init__(self, config):
+        self.config = config
+        self._lib = get_library()
+
+    async def run(
+        self,
+        chart_path: str,
+        remote: str,
+        cert_file: str | None = None,
+        key_file: str | None = None,
+        ca_file: str | None = None,
+        insecure_skip_tls_verify: bool = False,
+        plain_http: bool = False,
+    ) -> None:
+        """Push a chart to an OCI registry asynchronously.
+
+        Args:
+            chart_path: Path to the packaged chart (.tgz file)
+            remote: OCI registry URL (e.g., "oci://ghcr.io/org/charts")
+            cert_file: Path to client certificate file for TLS
+            key_file: Path to client key file for TLS
+            ca_file: Path to CA certificate file for TLS verification
+            insecure_skip_tls_verify: Skip TLS certificate verification
+            plain_http: Use HTTP instead of HTTPS
+
+        Raises:
+            ChartError: If push fails
+        """
+
+        def _push():
+            chart_cstr = ffi.new("char[]", chart_path.encode("utf-8"))
+            remote_cstr = ffi.new("char[]", remote.encode("utf-8"))
+
+            # Build options JSON
+            options = {}
+            if cert_file:
+                options["cert_file"] = cert_file
+            if key_file:
+                options["key_file"] = key_file
+            if ca_file:
+                options["ca_file"] = ca_file
+            if insecure_skip_tls_verify:
+                options["insecure_skip_tls_verify"] = insecure_skip_tls_verify
+            if plain_http:
+                options["plain_http"] = plain_http
+
+            options_json = json.dumps(options)
+            options_cstr = ffi.new("char[]", options_json.encode("utf-8"))
+
+            result = self._lib.helm_sdkpy_push(
+                self.config._handle_value,
+                chart_cstr,
+                remote_cstr,
+                options_cstr,
+            )
+
+            if result != 0:
+                check_error(result)
+
+        return await asyncio.to_thread(_push)

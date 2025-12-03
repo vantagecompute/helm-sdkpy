@@ -81,6 +81,13 @@ ffi.cdef(
     int helm_sdkpy_repo_list(helm_sdkpy_handle handle, char **result_json);
     int helm_sdkpy_repo_update(helm_sdkpy_handle handle, const char *name);
 
+    // Registry management actions
+    int helm_sdkpy_registry_login(helm_sdkpy_handle handle, const char *hostname, const char *username, const char *password, const char *options_json);
+    int helm_sdkpy_registry_logout(helm_sdkpy_handle handle, const char *hostname);
+    
+    // Push action (for OCI registries)
+    int helm_sdkpy_push(helm_sdkpy_handle handle, const char *chart_ref, const char *remote, const char *options_json);
+
     // Utility functions
     const char *helm_sdkpy_last_error(void);
     void helm_sdkpy_free(void *ptr);

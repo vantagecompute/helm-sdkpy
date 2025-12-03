@@ -21,12 +21,14 @@ from .actions import (
     History,
     Install,
     List,
+    RegistryLogin,
+    RegistryLogout,
     Rollback,
     Status,
     Uninstall,
     Upgrade,
 )
-from .chart import Lint, Package, Pull, Show, Test
+from .chart import Lint, Package, Pull, Push, Show, Test
 from .exceptions import (
     ChartError,
     ConfigurationError,
@@ -56,12 +58,15 @@ __all__ = [
     "Rollback",
     "GetValues",
     "History",
+    "RegistryLogin",
+    "RegistryLogout",
     # Chart classes
     "Pull",
     "Show",
     "Test",
     "Lint",
     "Package",
+    "Push",
     # Repository classes
     "RepoAdd",
     "RepoRemove",
