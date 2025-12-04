@@ -545,7 +545,7 @@ func helm_sdkpy_history(handle C.helm_sdkpy_handle, release_name *C.char, result
 // Pull action
 
 //export helm_sdkpy_pull
-func helm_sdkpy_pull(handle C.helm_sdkpy_handle, chart_ref *C.char, dest_dir *C.char) C.int {
+func helm_sdkpy_pull(handle C.helm_sdkpy_handle, chart_ref *C.char, dest_dir *C.char, version *C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -556,12 +556,17 @@ func helm_sdkpy_pull(handle C.helm_sdkpy_handle, chart_ref *C.char, dest_dir *C.
 
 	chartRef := C.GoString(chart_ref)
 	destDir := C.GoString(dest_dir)
+	chartVersion := C.GoString(version)
 
 	// Create pull action
 	client := action.NewPull()
 	client.Settings = state.envs
 	if destDir != "" {
 		client.DestDir = destDir
+	}
+	// Set version if provided
+	if chartVersion != "" {
+		client.Version = chartVersion
 	}
 
 	// Run the pull

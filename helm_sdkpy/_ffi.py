@@ -58,7 +58,7 @@ ffi.cdef(
     int helm_sdkpy_history(helm_sdkpy_handle handle, const char *release_name, char **result_json);
 
     // Pull action
-    int helm_sdkpy_pull(helm_sdkpy_handle handle, const char *chart_ref, const char *dest_dir);
+    int helm_sdkpy_pull(helm_sdkpy_handle handle, const char *chart_ref, const char *dest_dir, const char *version);
 
     // Show chart action
     int helm_sdkpy_show_chart(helm_sdkpy_handle handle, const char *chart_path, char **result_json);
@@ -84,7 +84,7 @@ ffi.cdef(
     // Registry management actions
     int helm_sdkpy_registry_login(helm_sdkpy_handle handle, const char *hostname, const char *username, const char *password, const char *options_json);
     int helm_sdkpy_registry_logout(helm_sdkpy_handle handle, const char *hostname);
-    
+
     // Push action (for OCI registries)
     int helm_sdkpy_push(helm_sdkpy_handle handle, const char *chart_ref, const char *remote, const char *options_json);
 

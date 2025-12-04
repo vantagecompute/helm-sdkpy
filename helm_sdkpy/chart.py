@@ -43,12 +43,15 @@ class Pull:
         self.config = config
         self._lib = get_library()
 
-    async def run(self, chart_ref: str, dest_dir: str | None = None) -> None:
+    async def run(
+        self, chart_ref: str, dest_dir: str | None = None, version: str | None = None
+    ) -> None:
         """Pull a chart asynchronously.
 
         Args:
             chart_ref: Chart reference (e.g., "repo/chart" or "oci://...")
             dest_dir: Destination directory (default: current directory)
+            version: Chart version to pull (e.g., "1.2.3"). If not specified, uses latest
 
         Raises:
             ChartError: If pull fails
@@ -57,8 +60,12 @@ class Pull:
         def _pull():
             ref_cstr = ffi.new("char[]", chart_ref.encode("utf-8"))
             dest_cstr = ffi.new("char[]", dest_dir.encode("utf-8")) if dest_dir else ffi.NULL
+            version_str = version or ""
+            version_cstr = ffi.new("char[]", version_str.encode("utf-8"))
 
-            result = self._lib.helm_sdkpy_pull(self.config._handle_value, ref_cstr, dest_cstr)
+            result = self._lib.helm_sdkpy_pull(
+                self.config._handle_value, ref_cstr, dest_cstr, version_cstr
+            )
 
             if result != 0:
                 check_error(result)
@@ -149,7 +156,7 @@ class Show:
         return await asyncio.to_thread(_values)
 
 
-class Test:
+class ReleaseTest:
     """Helm test action.
 
     Runs tests for a release.
@@ -160,7 +167,7 @@ class Test:
     Example:
         >>> import asyncio
         >>> config = Configuration()
-        >>> test = Test(config)
+        >>> test = ReleaseTest(config)
         >>> result = asyncio.run(test.run("my-release"))
     """
 

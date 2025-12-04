@@ -613,7 +613,6 @@ class RegistryLogin:
         Raises:
             RegistryError: If login fails
         """
-        from .exceptions import RegistryError
 
         def _registry_login():
             hostname_cstr = ffi.new("char[]", hostname.encode("utf-8"))
@@ -678,7 +677,6 @@ class RegistryLogout:
         Raises:
             RegistryError: If logout fails
         """
-        from .exceptions import RegistryError
 
         def _registry_logout():
             hostname_cstr = ffi.new("char[]", hostname.encode("utf-8"))
