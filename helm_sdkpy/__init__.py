@@ -14,6 +14,8 @@
 
 """Python bindings for Helm - The Kubernetes Package Manager."""
 
+from importlib.metadata import version as _get_version
+
 from ._ffi import get_version
 from .actions import (
     Configuration,
@@ -28,7 +30,7 @@ from .actions import (
     Uninstall,
     Upgrade,
 )
-from .chart import Lint, Package, Pull, Push, Show, Test
+from .chart import Lint, Package, Pull, Push, ReleaseTest, Show
 from .exceptions import (
     ChartError,
     ConfigurationError,
@@ -44,7 +46,10 @@ from .exceptions import (
 )
 from .repo import RepoAdd, RepoList, RepoRemove, RepoUpdate
 
-__version__ = "0.0.1"
+# Backwards compatibility alias - ReleaseTest renamed to avoid pytest collection
+Test = ReleaseTest
+
+__version__ = _get_version("helm-sdkpy")
 
 __all__ = [
     # Core classes
@@ -63,7 +68,8 @@ __all__ = [
     # Chart classes
     "Pull",
     "Show",
-    "Test",
+    "Test",  # Alias for ReleaseTest
+    "ReleaseTest",
     "Lint",
     "Package",
     "Push",

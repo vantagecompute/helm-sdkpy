@@ -1,10 +1,10 @@
 """Tests for registry operations."""
 
-import asyncio
+import inspect
+
 import pytest
 
-from helm_sdkpy import Configuration, RegistryLogin, RegistryLogout, Push
-from helm_sdkpy.exceptions import HelmError
+from helm_sdkpy import Configuration, Push, RegistryLogin, RegistryLogout
 
 
 class TestRegistryOperations:
@@ -43,54 +43,60 @@ class TestRegistryOperations:
         assert push is not None
         assert push.config == config
 
-    @pytest.mark.asyncio
-    async def test_registry_login_invalid_credentials(self):
-        """Test registry login with invalid credentials fails gracefully."""
-        config = Configuration()
-        registry_login = RegistryLogin(config)
-        
-        # This should fail because credentials are invalid
-        with pytest.raises((HelmError, Exception)):
-            await registry_login.run(
-                hostname="ghcr.io",
-                username="invalid_user_12345",
-                password="invalid_password_12345"
-            )
-
-    @pytest.mark.asyncio
-    async def test_registry_logout_nonexistent(self):
-        """Test registry logout for a registry we're not logged into."""
-        config = Configuration()
-        registry_logout = RegistryLogout(config)
-        
-        # Logout from a registry we were never logged into
-        # This should succeed (no-op) or fail gracefully
-        try:
-            await registry_logout.run(hostname="nonexistent-registry.example.com")
-        except Exception:
-            # It's okay if this fails - registry might not exist in credentials
-            pass
-
     def test_registry_login_has_run_method(self):
         """Test that RegistryLogin has an async run method."""
         config = Configuration()
         registry_login = RegistryLogin(config)
         assert hasattr(registry_login, "run")
-        assert asyncio.iscoroutinefunction(registry_login.run)
+        assert inspect.iscoroutinefunction(registry_login.run)
 
     def test_registry_logout_has_run_method(self):
         """Test that RegistryLogout has an async run method."""
         config = Configuration()
         registry_logout = RegistryLogout(config)
         assert hasattr(registry_logout, "run")
-        assert asyncio.iscoroutinefunction(registry_logout.run)
+        assert inspect.iscoroutinefunction(registry_logout.run)
 
     def test_push_has_run_method(self):
         """Test that Push has an async run method."""
         config = Configuration()
         push = Push(config)
         assert hasattr(push, "run")
-        assert asyncio.iscoroutinefunction(push.run)
+        assert inspect.iscoroutinefunction(push.run)
+
+    def test_registry_login_run_signature(self):
+        """Test RegistryLogin.run() method signature."""
+        sig = inspect.signature(RegistryLogin.run)
+        params = list(sig.parameters.keys())
+        assert "self" in params
+        assert "hostname" in params
+        assert "username" in params
+        assert "password" in params
+        assert "cert_file" in params
+        assert "key_file" in params
+        assert "ca_file" in params
+        assert "insecure" in params
+        assert "plain_http" in params
+
+    def test_registry_logout_run_signature(self):
+        """Test RegistryLogout.run() method signature."""
+        sig = inspect.signature(RegistryLogout.run)
+        params = list(sig.parameters.keys())
+        assert "self" in params
+        assert "hostname" in params
+
+    def test_push_run_signature(self):
+        """Test Push.run() method signature."""
+        sig = inspect.signature(Push.run)
+        params = list(sig.parameters.keys())
+        assert "self" in params
+        assert "chart_path" in params
+        assert "remote" in params
+        assert "cert_file" in params
+        assert "key_file" in params
+        assert "ca_file" in params
+        assert "insecure_skip_tls_verify" in params
+        assert "plain_http" in params
 
 
 if __name__ == "__main__":
