@@ -134,7 +134,7 @@ func helm_sdkpy_config_create(namespace *C.char, kubeconfig *C.char, kubecontext
 	if err != nil {
 		return setError(fmt.Errorf("failed to initialize helm config: %w", err))
 	}
-	
+
 	// Configure the Kubernetes client to use Ignore field validation
 	// This allows charts with managedFields in templates (like rook-ceph v1.18.x)
 	// to install successfully without strict Kubernetes API validation errors
@@ -202,20 +202,20 @@ func helm_sdkpy_install(handle C.helm_sdkpy_handle, release_name *C.char, chart_
 	client.ReleaseName = releaseName
 	client.Namespace = state.envs.Namespace()
 	client.CreateNamespace = create_namespace != 0
-	
+
 	// Use client-side apply instead of server-side to avoid strict field validation
 	// Server-side apply (default in Helm v4) enforces strict field validation which
 	// rejects charts with managedFields in templates (like rook-ceph v1.18.x)
 	client.ServerSideApply = false
-	
+
 	// Disable OpenAPI validation as well
 	client.DisableOpenAPIValidation = true
-	
+
 	// Set version if provided
 	if chartVersion != "" {
 		client.Version = chartVersion
 	}
-	
+
 	// Configure wait behavior
 	if wait != 0 {
 		client.WaitStrategy = kube.StatusWatcherStrategy // Use the status watcher strategy
@@ -284,7 +284,10 @@ func helm_sdkpy_upgrade(handle C.helm_sdkpy_handle, release_name *C.char, chart_
 	// Create upgrade action
 	client := action.NewUpgrade(state.cfg)
 	client.Namespace = state.envs.Namespace()
-	
+
+	// Set wait strategy
+	client.WaitStrategy = kube.HookOnlyStrategy
+
 	// Set version if provided
 	if chartVersion != "" {
 		client.Version = chartVersion
@@ -342,7 +345,7 @@ func helm_sdkpy_uninstall(handle C.helm_sdkpy_handle, release_name *C.char, wait
 
 	// Create uninstall action
 	client := action.NewUninstall(state.cfg)
-	
+
 	// Configure wait behavior
 	if wait != 0 {
 		client.WaitStrategy = kube.StatusWatcherStrategy // Use the status watcher strategy
@@ -996,11 +999,11 @@ func helm_sdkpy_registry_login(handle C.helm_sdkpy_handle, hostname *C.char, use
 
 	// Parse options
 	var options struct {
-		CertFile              string `json:"cert_file"`
-		KeyFile               string `json:"key_file"`
-		CAFile                string `json:"ca_file"`
-		Insecure              bool   `json:"insecure"`
-		PlainHTTP             bool   `json:"plain_http"`
+		CertFile  string `json:"cert_file"`
+		KeyFile   string `json:"key_file"`
+		CAFile    string `json:"ca_file"`
+		Insecure  bool   `json:"insecure"`
+		PlainHTTP bool   `json:"plain_http"`
 	}
 
 	optionsStr := C.GoString(options_json)
@@ -1015,7 +1018,7 @@ func helm_sdkpy_registry_login(handle C.helm_sdkpy_handle, hostname *C.char, use
 
 	// Build options slice
 	var loginOpts []action.RegistryLoginOpt
-	
+
 	if options.CertFile != "" {
 		loginOpts = append(loginOpts, action.WithCertFile(options.CertFile))
 	}
@@ -1101,7 +1104,7 @@ func helm_sdkpy_push(handle C.helm_sdkpy_handle, chart_ref *C.char, remote *C.ch
 	// Create push action
 	var pushOpts []action.PushOpt
 	pushOpts = append(pushOpts, action.WithPushConfig(state.cfg))
-	
+
 	if options.CertFile != "" || options.KeyFile != "" || options.CAFile != "" {
 		pushOpts = append(pushOpts, action.WithTLSClientConfig(options.CertFile, options.KeyFile, options.CAFile))
 	}
