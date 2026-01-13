@@ -40,7 +40,6 @@ import (
 	"helm.sh/helm/v4/pkg/kube"
 	"helm.sh/helm/v4/pkg/registry"
 	"helm.sh/helm/v4/pkg/repo/v1"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
 // Configuration state
@@ -111,75 +110,61 @@ func helm_sdkpy_version_number() C.int {
 
 //export helm_sdkpy_config_create
 func helm_sdkpy_config_create(namespace *C.char, kubeconfig *C.char, kubecontext *C.char, handle_out *C.helm_sdkpy_handle) C.int {
-ns := C.GoString(namespace)
-kc := C.GoString(kubeconfig)
-kctx := C.GoString(kubecontext)
+	ns := C.GoString(namespace)
+	kc := C.GoString(kubeconfig)
+	kctx := C.GoString(kubecontext)
 
-var restClientGetter genericclioptions.RESTClientGetter
-var envs *cli.EnvSettings
+	// Create environment settings
+	envs := cli.New()
+	if ns != "" {
+		envs.SetNamespace(ns)
+	}
+	if kc != "" {
+		envs.KubeConfig = kc
+	}
+	if kctx != "" {
+		envs.KubeContext = kctx
+	}
 
-// Check if kubeconfig is YAML content or a file path
-if kc != "" && isKubeconfigYAMLContent(kc) {
-// Use custom RESTClientGetter for in-memory kubeconfig
-restClientGetter = NewKubeconfigStringGetter(kc, ns, kctx)
-envs = cli.New()
-if ns != "" {
-envs.SetNamespace(ns)
-}
-} else {
-// Standard file-based kubeconfig
-envs = cli.New()
-if ns != "" {
-envs.SetNamespace(ns)
-}
-if kc != "" {
-envs.KubeConfig = kc
-}
-if kctx != "" {
-envs.KubeContext = kctx
-}
-restClientGetter = envs.RESTClientGetter()
-}
+	// Create action configuration
+	cfg := new(action.Configuration)
 
-// Create action configuration
-cfg := new(action.Configuration)
+	// Initialize the configuration with Kubernetes settings
+	err := cfg.Init(envs.RESTClientGetter(), envs.Namespace(), os.Getenv("HELM_DRIVER"))
+	if err != nil {
+		return setError(fmt.Errorf("failed to initialize helm config: %w", err))
+	}
 
-// Initialize the configuration with Kubernetes settings
-err := cfg.Init(restClientGetter, envs.Namespace(), os.Getenv("HELM_DRIVER"))
-if err != nil {
-return setError(fmt.Errorf("failed to initialize helm config: %w", err))
-}
+	// Configure the Kubernetes client to use Ignore field validation
+	// This allows charts with managedFields in templates (like rook-ceph v1.18.x)
+	// to install successfully without strict Kubernetes API validation errors
+	if cfg.KubeClient != nil {
+		// Note: In Helm v4, field validation is handled via client options during Create/Update
+		// We'll configure this in the Install action instead
+	}
 
-// Configure the Kubernetes client to use Ignore field validation
-// This allows charts with managedFields in templates (like rook-ceph v1.18.x)
-// to install successfully without strict Kubernetes API validation errors
-if cfg.KubeClient != nil {
-// Note: In Helm v4, field validation is handled via client options during Create/Update
-// We'll configure this in the Install action instead
-}
+	// Initialize registry client for OCI operations
+	registryClient, err := registry.NewClient(
+		registry.ClientOptDebug(false),
+		registry.ClientOptEnableCache(true),
+		registry.ClientOptWriter(os.Stdout),
+		registry.ClientOptCredentialsFile(envs.RegistryConfig),
+	)
+	if err != nil {
+		return setError(fmt.Errorf("failed to initialize registry client: %w", err))
+	}
+	cfg.RegistryClient = registryClient
 
-// Initialize registry client for OCI operations
-registryClient, err := registry.NewClient(
-registry.ClientOptDebug(false),
-registry.ClientOptEnableCache(true),
-registry.ClientOptWriter(os.Stdout),
-registry.ClientOptCredentialsFile(envs.RegistryConfig),
-)
-if err != nil {
-return setError(fmt.Errorf("failed to initialize registry client: %w", err))
-}
-cfg.RegistryClient = registryClient
+	state := &configState{
+		cfg:  cfg,
+		envs: envs,
+	}
 
-state := &configState{
-cfg:  cfg,
-envs: envs,
-}
+	handle := nextHandle()
+	configs.Store(handle, state)
+	*handle_out = handle
 
-handle := nextHandle()
-configs.Store(handle, state)
-*handle_out = handle
-
-return 0
+	return 0
 }
 
 //export helm_sdkpy_config_destroy

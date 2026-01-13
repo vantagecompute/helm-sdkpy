@@ -38,12 +38,30 @@ class Configuration:
 
     Args:
         namespace: Kubernetes namespace to operate in (default: "default")
-        kubeconfig: Path to kubeconfig file (default: uses $KUBECONFIG or ~/.kube/config)
+        kubeconfig: Kubeconfig source. Can be:
+            - None: Uses $KUBECONFIG env var or ~/.kube/config (default)
+            - File path: Path to a kubeconfig file (e.g., "/path/to/config.yaml")
+            - YAML string: Kubeconfig content as a YAML string (auto-detected)
         kubecontext: Kubernetes context to use (default: current context)
 
     Example:
         >>> import asyncio
+        >>> # Using default kubeconfig
         >>> config = Configuration(namespace="my-namespace")
+        >>>
+        >>> # Using explicit file path
+        >>> config = Configuration(
+        ...     namespace="default",
+        ...     kubeconfig="/path/to/kubeconfig.yaml"
+        ... )
+        >>>
+        >>> # Using kubeconfig YAML string (useful for secrets/env vars)
+        >>> kubeconfig_content = os.environ.get("KUBECONFIG_CONTENT")
+        >>> config = Configuration(
+        ...     namespace="default",
+        ...     kubeconfig=kubeconfig_content
+        ... )
+        >>>
         >>> install = Install(config)
         >>> result = asyncio.run(install.run("my-release", "/path/to/chart"))
     """
