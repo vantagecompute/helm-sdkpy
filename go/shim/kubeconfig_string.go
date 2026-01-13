@@ -86,13 +86,38 @@ return mapper, nil
 }
 
 // ToRawKubeConfigLoader returns a clientcmd.ClientConfig.
+// This method properly respects the namespace override so that all resources,
+// including pre-install hooks, are created in the correct namespace.
 func (k *kubeconfigStringGetter) ToRawKubeConfigLoader() clientcmd.ClientConfig {
-config, err := clientcmd.NewClientConfigFromBytes([]byte(k.kubeconfigContent))
-if err != nil {
-// Return a default config on error
-return clientcmd.NewDefaultClientConfig(clientcmdapi.Config{}, &clientcmd.ConfigOverrides{})
-}
-return config
+	config, err := clientcmd.NewClientConfigFromBytes([]byte(k.kubeconfigContent))
+	if err != nil {
+		// Return a default config on error
+		return clientcmd.NewDefaultClientConfig(clientcmdapi.Config{}, &clientcmd.ConfigOverrides{})
+	}
+
+	// If a namespace override was specified, wrap the config to return it
+	if k.namespace != "" {
+		rawConfig, err := config.RawConfig()
+		if err != nil {
+			return config
+		}
+
+		// Build config overrides with namespace
+		overrides := &clientcmd.ConfigOverrides{
+			Context: clientcmdapi.Context{
+				Namespace: k.namespace,
+			},
+		}
+
+		// If a context was specified, use it
+		if k.context != "" {
+			overrides.CurrentContext = k.context
+		}
+
+		return clientcmd.NewDefaultClientConfig(rawConfig, overrides)
+	}
+
+	return config
 }
 
 // isKubeconfigYAMLContent checks if the string is YAML content rather than a file path.
