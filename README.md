@@ -138,6 +138,50 @@ chart_path="https://charts.bitnami.com/bitnami/nginx-15.0.0.tgz"
 chart_path="https://example.com/charts/myapp-1.2.3.tgz"
 ```
 
+## 🔧 Kubeconfig Configuration
+
+helm-sdkpy provides flexible options for configuring Kubernetes cluster access:
+
+### Default Kubeconfig
+```python
+# Uses $KUBECONFIG env var or ~/.kube/config
+config = helm_sdkpy.Configuration(namespace="default")
+```
+
+### File Path
+```python
+# Explicit path to kubeconfig file
+config = helm_sdkpy.Configuration(
+    namespace="default",
+    kubeconfig="/path/to/kubeconfig.yaml"
+)
+```
+
+### YAML String
+Pass kubeconfig content directly as a string - useful for dynamic configurations, secrets, or CI/CD environments:
+```python
+# Kubeconfig from environment variable
+kubeconfig_content = os.environ.get("KUBECONFIG_CONTENT")
+
+# Or read from a secret, API response, etc.
+config = helm_sdkpy.Configuration(
+    namespace="default",
+    kubeconfig=kubeconfig_content  # YAML string auto-detected
+)
+```
+
+### Specific Context
+```python
+# Use a specific context from multi-cluster kubeconfig
+config = helm_sdkpy.Configuration(
+    namespace="production",
+    kubeconfig="/path/to/kubeconfig.yaml",
+    kubecontext="production-cluster"
+)
+```
+
+See [examples/kubeconfig_usage.py](examples/kubeconfig_usage.py) for more detailed examples.
+
 ## 📖 API Overview
 
 ### Core Actions (All Async)

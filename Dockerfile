@@ -42,7 +42,7 @@ RUN mkdir -p /build/helm_sdkpy/_lib/linux-amd64 && \
     cd shim && \
     go build -buildmode=c-shared \
         -o /build/helm_sdkpy/_lib/linux-amd64/libhelm_sdkpy.so \
-        main.go
+        .
 
 # Verify the shared library was built
 RUN ls -lh /build/helm_sdkpy/_lib/linux-amd64/libhelm_sdkpy.so && \
