@@ -99,7 +99,7 @@ class Configuration:
         return False
 
     @classmethod
-    def from_service_account(cls, namespace: str = "default") -> "Configuration":
+    def from_service_account(cls, namespace: str = "default") -> Configuration:
         """Create configuration using in-cluster ServiceAccount.
 
         This is for running inside a Kubernetes pod with a ServiceAccount.
