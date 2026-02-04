@@ -26,13 +26,14 @@ Example:
 
 ### Methods
 
-#### `run(self, chart_ref: 'str', dest_dir: 'str | None' = None) -> 'None'`
+#### `run(self, chart_ref: 'str', dest_dir: 'str | None' = None, version: 'str | None' = None) -> 'None'`
 
 Pull a chart asynchronously.
 
 Args:
     chart_ref: Chart reference (e.g., "repo/chart" or "oci://...")
     dest_dir: Destination directory (default: current directory)
+    version: Chart version to pull (e.g., "1.2.3"). If not specified, uses latest
 
 Raises:
     ChartError: If pull fails
@@ -92,7 +93,7 @@ Raises:
     ChartError: If show fails
 
 
-## Test
+## ReleaseTest
 
 Helm test action.
 
@@ -106,7 +107,7 @@ Example:
 ```python
 >>> import asyncio
 >>> config = Configuration()
->>> test = Test(config)
+>>> test = ReleaseTest(config)
 >>> result = asyncio.run(test.run("my-release"))
 ```
 

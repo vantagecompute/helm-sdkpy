@@ -27,7 +27,7 @@ sys.path.insert(0, str(repo_root))
 # Import after adding to path
 from helm_sdkpy import Configuration  # noqa: E402
 from helm_sdkpy.actions import Install, Upgrade, Uninstall, List, Status, Rollback, GetValues, History  # noqa: E402
-from helm_sdkpy.chart import Pull, Show, Test, Lint, Package  # noqa: E402
+from helm_sdkpy.chart import Pull, Show, ReleaseTest, Lint, Package  # noqa: E402
 from helm_sdkpy.repo import RepoAdd, RepoRemove, RepoList, RepoUpdate  # noqa: E402
 from helm_sdkpy import exceptions  # noqa: E402
 
@@ -191,7 +191,7 @@ def generate_chart_docs(output_dir):
         "",
         format_class_docs(Show, "Show"),
         "",
-        format_class_docs(Test, "Test"),
+        format_class_docs(ReleaseTest, "ReleaseTest"),
         "",
         format_class_docs(Lint, "Lint"),
         "",
