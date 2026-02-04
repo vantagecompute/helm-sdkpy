@@ -98,6 +98,32 @@ class Configuration:
         self.__del__()
         return False
 
+    @classmethod
+    def from_service_account(cls, namespace: str = "default") -> "Configuration":
+        """Create configuration using in-cluster ServiceAccount.
+
+        This is for running inside a Kubernetes pod with a ServiceAccount.
+        The pod must have automountServiceAccountToken: true (the default).
+
+        When running in-cluster, the Go shim automatically uses:
+        - Token from /var/run/secrets/kubernetes.io/serviceaccount/token
+        - CA cert from /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        - API server from KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT env vars
+
+        Args:
+            namespace: Kubernetes namespace to operate in (default: "default")
+
+        Returns:
+            Configuration instance using ServiceAccount authentication
+
+        Example:
+            >>> # Inside a Kubernetes pod
+            >>> config = Configuration.from_service_account(namespace="my-namespace")
+            >>> install = Install(config)
+            >>> result = asyncio.run(install.run("my-release", "oci://ghcr.io/org/chart"))
+        """
+        return cls(namespace=namespace, kubeconfig=None, kubecontext=None)
+
 
 class Install:
     """Helm install action.
