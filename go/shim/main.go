@@ -111,35 +111,42 @@ func helm_sdkpy_version_number() C.int {
 
 //export helm_sdkpy_config_create
 func helm_sdkpy_config_create(namespace *C.char, kubeconfig *C.char, kubecontext *C.char, handle_out *C.helm_sdkpy_handle) C.int {
-ns := C.GoString(namespace)
-kc := C.GoString(kubeconfig)
-kctx := C.GoString(kubecontext)
+	ns := C.GoString(namespace)
+	kc := C.GoString(kubeconfig)
+	kctx := C.GoString(kubecontext)
 
-var restClientGetter genericclioptions.RESTClientGetter
-var envs *cli.EnvSettings
+	var restClientGetter genericclioptions.RESTClientGetter
+	var envs *cli.EnvSettings
 
-// Check if kubeconfig is YAML content or a file path
-if kc != "" && isKubeconfigYAMLContent(kc) {
-// Use custom RESTClientGetter for in-memory kubeconfig
-restClientGetter = NewKubeconfigStringGetter(kc, ns, kctx)
-envs = cli.New()
-if ns != "" {
-envs.SetNamespace(ns)
-}
-} else {
-// Standard file-based kubeconfig
-envs = cli.New()
-if ns != "" {
-envs.SetNamespace(ns)
-}
-if kc != "" {
-envs.KubeConfig = kc
-}
-if kctx != "" {
-envs.KubeContext = kctx
-}
-restClientGetter = envs.RESTClientGetter()
-}
+	// Initialize env settings (needed for all paths)
+	envs = cli.New()
+	if ns != "" {
+		envs.SetNamespace(ns)
+	}
+
+	// Priority 1: Explicit kubeconfig (YAML string or file path) takes precedence
+	if kc != "" {
+		if isKubeconfigYAMLContent(kc) {
+			// In-memory kubeconfig from YAML string
+			restClientGetter = NewKubeconfigStringGetter(kc, ns, kctx)
+		} else {
+			// File path to kubeconfig
+			envs.KubeConfig = kc
+			if kctx != "" {
+				envs.KubeContext = kctx
+			}
+			restClientGetter = envs.RESTClientGetter()
+		}
+	// Priority 2: In-cluster ServiceAccount authentication
+	} else if isRunningInCluster() {
+		restClientGetter = NewInClusterGetter(ns)
+	// Priority 3: Default kubeconfig ($KUBECONFIG or ~/.kube/config)
+	} else {
+		if kctx != "" {
+			envs.KubeContext = kctx
+		}
+		restClientGetter = envs.RESTClientGetter()
+	}
 
 // Create action configuration
 cfg := new(action.Configuration)
@@ -680,7 +687,7 @@ func helm_sdkpy_test(handle C.helm_sdkpy_handle, release_name *C.char, result_js
 	client := action.NewReleaseTesting(state.cfg)
 
 	// Run the test
-	rel, err := client.Run(releaseName)
+	rel, _, err := client.Run(releaseName)
 	if err != nil {
 		return setError(fmt.Errorf("test failed: %w", err))
 	}
@@ -802,7 +809,7 @@ func helm_sdkpy_repo_add(handle C.helm_sdkpy_handle, name *C.char, url *C.char, 
 	// Apply additional options
 	if options != nil {
 		if v, ok := options["insecure_skip_tls_verify"].(bool); ok {
-			entry.InsecureSkipTLSverify = v
+			entry.InsecureSkipTLSVerify = v
 		}
 		if v, ok := options["pass_credentials_all"].(bool); ok {
 			entry.PassCredentialsAll = v
