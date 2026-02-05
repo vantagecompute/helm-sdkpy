@@ -43,6 +43,9 @@ class Configuration:
             - File path: Path to a kubeconfig file (e.g., "/path/to/config.yaml")
             - YAML string: Kubeconfig content as a YAML string (auto-detected)
         kubecontext: Kubernetes context to use (default: current context)
+        plain_http: Use HTTP instead of HTTPS for OCI registries (default: False).
+            Enable this when using local registries without TLS (e.g., MicroK8s registry).
+        insecure_skip_tls_verify: Skip TLS certificate verification (default: False)
 
     Example:
         >>> import asyncio
@@ -64,6 +67,12 @@ class Configuration:
         >>>
         >>> install = Install(config)
         >>> result = asyncio.run(install.run("my-release", "/path/to/chart"))
+        >>>
+        >>> # Using a local HTTP registry (no TLS)
+        >>> config = Configuration(
+        ...     namespace="default",
+        ...     plain_http=True  # For registries without TLS (e.g., local registries)
+        ... )
     """
 
     def __init__(
@@ -71,6 +80,8 @@ class Configuration:
         namespace: str = "default",
         kubeconfig: str | None = None,
         kubecontext: str | None = None,
+        plain_http: bool = False,
+        insecure_skip_tls_verify: bool = False,
     ):
         self._lib = get_library()
         self._handle = ffi.new("helm_sdkpy_handle *")
@@ -79,7 +90,16 @@ class Configuration:
         kc_cstr = ffi.new("char[]", kubeconfig.encode("utf-8")) if kubeconfig else ffi.NULL
         kctx_cstr = ffi.new("char[]", kubecontext.encode("utf-8")) if kubecontext else ffi.NULL
 
-        result = self._lib.helm_sdkpy_config_create(ns_cstr, kc_cstr, kctx_cstr, self._handle)
+        # Build options JSON
+        options = {}
+        if plain_http:
+            options["plain_http"] = plain_http
+        if insecure_skip_tls_verify:
+            options["insecure_skip_tls_verify"] = insecure_skip_tls_verify
+        options_json = json.dumps(options)
+        options_cstr = ffi.new("char[]", options_json.encode("utf-8"))
+
+        result = self._lib.helm_sdkpy_config_create(ns_cstr, kc_cstr, kctx_cstr, options_cstr, self._handle)
         check_error(result)
 
         self._handle_value = self._handle[0]
@@ -99,7 +119,12 @@ class Configuration:
         return False
 
     @classmethod
-    def from_service_account(cls, namespace: str = "default") -> Configuration:
+    def from_service_account(
+        cls, 
+        namespace: str = "default",
+        plain_http: bool = False,
+        insecure_skip_tls_verify: bool = False,
+    ) -> Configuration:
         """Create configuration using in-cluster ServiceAccount.
 
         This is for running inside a Kubernetes pod with a ServiceAccount.
@@ -112,6 +137,8 @@ class Configuration:
 
         Args:
             namespace: Kubernetes namespace to operate in (default: "default")
+            plain_http: Use HTTP instead of HTTPS for OCI registries (default: False)
+            insecure_skip_tls_verify: Skip TLS certificate verification (default: False)
 
         Returns:
             Configuration instance using ServiceAccount authentication
@@ -121,8 +148,20 @@ class Configuration:
             >>> config = Configuration.from_service_account(namespace="my-namespace")
             >>> install = Install(config)
             >>> result = asyncio.run(install.run("my-release", "oci://ghcr.io/org/chart"))
+            >>>
+            >>> # Using a local HTTP registry
+            >>> config = Configuration.from_service_account(
+            ...     namespace="my-namespace",
+            ...     plain_http=True
+            ... )
         """
-        return cls(namespace=namespace, kubeconfig=None, kubecontext=None)
+        return cls(
+            namespace=namespace, 
+            kubeconfig=None, 
+            kubecontext=None,
+            plain_http=plain_http,
+            insecure_skip_tls_verify=insecure_skip_tls_verify,
+        )
 
 
 class Install:
