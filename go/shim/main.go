@@ -24,9 +24,13 @@ typedef unsigned long long helm_sdkpy_handle;
 import "C"
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"unsafe"
@@ -34,13 +38,15 @@ import (
 	"time"
 
 	"helm.sh/helm/v4/pkg/action"
-	"helm.sh/helm/v4/pkg/chart/v2/loader"
+	"helm.sh/helm/v4/pkg/chart"
+	"helm.sh/helm/v4/pkg/chart/loader"
 	"helm.sh/helm/v4/pkg/cli"
 	"helm.sh/helm/v4/pkg/getter"
 	"helm.sh/helm/v4/pkg/kube"
 	"helm.sh/helm/v4/pkg/registry"
 	"helm.sh/helm/v4/pkg/repo/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/util/homedir"
 )
 
 // Configuration state
@@ -107,6 +113,211 @@ func helm_sdkpy_version_number() C.int {
 	return 1 // Version 0.0.1
 }
 
+// ensureWritableHelmPaths checks if Helm cache paths are set and writable.
+// If not, it attempts to configure them to use a writable temp directory.
+// This is critical for running in read-only container environments.
+func ensureWritableHelmPaths() error {
+	// Check if HELM_CACHE_HOME is already set
+	if os.Getenv("HELM_CACHE_HOME") == "" {
+		// Try default path first
+		homeDir := homedir.HomeDir()
+		defaultCache := filepath.Join(homeDir, ".cache", "helm")
+		
+		// Test if we can write to the default location
+		if !isPathWritable(defaultCache) {
+			// Fall back to a temp directory
+			tmpDir := filepath.Join(os.TempDir(), "helm-sdkpy-cache")
+			if err := os.MkdirAll(tmpDir, 0755); err != nil {
+				return fmt.Errorf("cannot create writable cache directory: %w (hint: set HELM_CACHE_HOME to a writable path)", err)
+			}
+			os.Setenv("HELM_CACHE_HOME", tmpDir)
+		}
+	}
+	
+	// Check if HELM_CONFIG_HOME is already set
+	if os.Getenv("HELM_CONFIG_HOME") == "" {
+		homeDir := homedir.HomeDir()
+		defaultConfig := filepath.Join(homeDir, ".config", "helm")
+		
+		if !isPathWritable(defaultConfig) {
+			tmpDir := filepath.Join(os.TempDir(), "helm-sdkpy-config")
+			if err := os.MkdirAll(tmpDir, 0755); err != nil {
+				return fmt.Errorf("cannot create writable config directory: %w (hint: set HELM_CONFIG_HOME to a writable path)", err)
+			}
+			os.Setenv("HELM_CONFIG_HOME", tmpDir)
+		}
+	}
+	
+	// Check if HELM_DATA_HOME is already set
+	if os.Getenv("HELM_DATA_HOME") == "" {
+		homeDir := homedir.HomeDir()
+		defaultData := filepath.Join(homeDir, ".local", "share", "helm")
+		
+		if !isPathWritable(defaultData) {
+			tmpDir := filepath.Join(os.TempDir(), "helm-sdkpy-data")
+			if err := os.MkdirAll(tmpDir, 0755); err != nil {
+				return fmt.Errorf("cannot create writable data directory: %w (hint: set HELM_DATA_HOME to a writable path)", err)
+			}
+			os.Setenv("HELM_DATA_HOME", tmpDir)
+		}
+	}
+	
+	return nil
+}
+
+// isPathWritable checks if a path is writable by attempting to create it
+// and a test file within it.
+func isPathWritable(path string) bool {
+	// Try to create the directory
+	if err := os.MkdirAll(path, 0755); err != nil {
+		return false
+	}
+	
+	// Try to create a test file
+	testFile := filepath.Join(path, ".helm-sdkpy-write-test")
+	f, err := os.Create(testFile)
+	if err != nil {
+		return false
+	}
+	f.Close()
+	os.Remove(testFile)
+	
+	return true
+}
+
+// loadChartDiskless loads a chart without requiring filesystem writes.
+// For OCI and HTTP charts, it downloads directly to memory and loads from there.
+// For local paths, it uses the standard loader.
+// This enables helm-sdkpy to work in read-only filesystem environments.
+func loadChartDiskless(chartRef string, version string, registryClient *registry.Client, envs *cli.EnvSettings) (chart.Charter, error) {
+	// Check if it's an OCI reference
+	if registry.IsOCI(chartRef) {
+		return loadChartFromOCI(chartRef, version, registryClient)
+	}
+
+	// Check if it's an HTTP/HTTPS URL
+	if strings.HasPrefix(chartRef, "http://") || strings.HasPrefix(chartRef, "https://") {
+		return loadChartFromHTTP(chartRef, envs)
+	}
+
+	// Check if it's a local file or directory
+	if fi, err := os.Stat(chartRef); err == nil {
+		if fi.IsDir() {
+			return loader.LoadDir(chartRef)
+		}
+		return loader.LoadFile(chartRef)
+	}
+
+	// It might be a repo/chart reference (e.g., "bitnami/nginx")
+	// For these, we need to resolve via repository and then download
+	return loadChartFromRepo(chartRef, version, envs)
+}
+
+// loadChartFromOCI loads a chart directly from an OCI registry into memory.
+// No disk writes required - the chart bytes are loaded directly into a chart.Chart object.
+func loadChartFromOCI(chartRef string, version string, registryClient *registry.Client) (chart.Charter, error) {
+	if registryClient == nil {
+		return nil, fmt.Errorf("registry client is required for OCI charts")
+	}
+
+	// Build the full reference with version tag
+	ref := strings.TrimPrefix(chartRef, fmt.Sprintf("%s://", registry.OCIScheme))
+	if version != "" && !strings.Contains(ref, ":") {
+		ref = fmt.Sprintf("%s:%s", ref, version)
+	}
+
+	// Pull the chart - this downloads to memory, not disk!
+	result, err := registryClient.Pull(ref)
+	if err != nil {
+		return nil, fmt.Errorf("failed to pull OCI chart: %w", err)
+	}
+
+	// Load directly from the in-memory bytes
+	return loader.LoadArchive(bytes.NewReader(result.Chart.Data))
+}
+
+// loadChartFromHTTP loads a chart directly from an HTTP/HTTPS URL into memory.
+func loadChartFromHTTP(chartURL string, envs *cli.EnvSettings) (chart.Charter, error) {
+	// Parse the URL to get the scheme
+	u, err := url.Parse(chartURL)
+	if err != nil {
+		return nil, fmt.Errorf("invalid chart URL: %w", err)
+	}
+
+	// Get the appropriate getter for HTTP/HTTPS
+	getters := getter.All(envs)
+	g, err := getters.ByScheme(u.Scheme)
+	if err != nil {
+		return nil, fmt.Errorf("no getter for scheme %s: %w", u.Scheme, err)
+	}
+
+	// Download directly to memory
+	data, err := g.Get(chartURL, getter.WithURL(chartURL))
+	if err != nil {
+		return nil, fmt.Errorf("failed to download chart: %w", err)
+	}
+
+	// Load directly from the in-memory bytes
+	return loader.LoadArchive(data)
+}
+
+// loadChartFromRepo resolves a repo/chart reference and loads it.
+// This path may still require disk access for repository index caching.
+func loadChartFromRepo(chartRef string, version string, envs *cli.EnvSettings) (chart.Charter, error) {
+	// Split the reference into repo and chart name
+	parts := strings.SplitN(chartRef, "/", 2)
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("invalid chart reference %q: expected format 'repo/chart'", chartRef)
+	}
+
+	repoName := parts[0]
+	chartName := parts[1]
+
+	// Load the repository file
+	repoFile, err := repo.LoadFile(envs.RepositoryConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load repository file: %w", err)
+	}
+
+	// Find the repository entry
+	repoEntry := repoFile.Get(repoName)
+	if repoEntry == nil {
+		return nil, fmt.Errorf("repository %q not found", repoName)
+	}
+
+	// Create a chart repository client
+	chartRepo, err := repo.NewChartRepository(repoEntry, getter.All(envs))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create chart repository: %w", err)
+	}
+	chartRepo.CachePath = envs.RepositoryCache
+
+	// Find the chart URL in the repo index
+	indexFile, err := repo.LoadIndexFile(filepath.Join(envs.RepositoryCache, fmt.Sprintf("%s-index.yaml", repoName)))
+	if err != nil {
+		return nil, fmt.Errorf("failed to load index file (try running 'helm repo update'): %w", err)
+	}
+
+	// Get the chart version
+	cv, err := indexFile.Get(chartName, version)
+	if err != nil {
+		return nil, fmt.Errorf("chart %q version %q not found in repository %q: %w", chartName, version, repoName, err)
+	}
+
+	if len(cv.URLs) == 0 {
+		return nil, fmt.Errorf("chart %q has no download URLs", chartName)
+	}
+
+	// Resolve the URL (it might be relative)
+	chartURL, err := repo.ResolveReferenceURL(repoEntry.URL, cv.URLs[0])
+	if err != nil {
+		return nil, fmt.Errorf("failed to resolve chart URL: %w", err)
+	}
+
+	// Now download via HTTP
+	return loadChartFromHTTP(chartURL, envs)
+}
+
 // Configuration management
 
 //export helm_sdkpy_config_create
@@ -117,6 +328,12 @@ func helm_sdkpy_config_create(namespace *C.char, kubeconfig *C.char, kubecontext
 
 	var restClientGetter genericclioptions.RESTClientGetter
 	var envs *cli.EnvSettings
+
+	// Ensure Helm has writable paths before initializing
+	// This auto-configures temp directories for read-only filesystem environments
+	if err := ensureWritableHelmPaths(); err != nil {
+		return setError(err)
+	}
 
 	// Initialize env settings (needed for all paths)
 	envs = cli.New()
@@ -250,14 +467,9 @@ func helm_sdkpy_install(handle C.helm_sdkpy_handle, release_name *C.char, chart_
 		client.WaitStrategy = kube.HookOnlyStrategy // Only wait for hooks by default
 	}
 
-	// Locate and load the chart (supports local, OCI, and HTTP)
-	cp, err := client.ChartPathOptions.LocateChart(chartPath, state.envs)
-	if err != nil {
-		return setError(fmt.Errorf("failed to locate chart: %w", err))
-	}
-
-	// Load the chart from the located path
-	chart, err := loader.Load(cp)
+	// Load chart using diskless approach (works in read-only filesystem environments)
+	// For OCI and HTTP charts, this downloads directly to memory - no disk writes needed
+	loadedChart, err := loadChartDiskless(chartPath, chartVersion, state.cfg.RegistryClient, state.envs)
 	if err != nil {
 		return setError(fmt.Errorf("failed to load chart: %w", err))
 	}
@@ -271,7 +483,7 @@ func helm_sdkpy_install(handle C.helm_sdkpy_handle, release_name *C.char, chart_
 	}
 
 	// Run the install
-	rel, err := client.Run(chart, values)
+	rel, err := client.Run(loadedChart, values)
 	if err != nil {
 		return setError(fmt.Errorf("install failed: %w", err))
 	}
@@ -315,14 +527,9 @@ func helm_sdkpy_upgrade(handle C.helm_sdkpy_handle, release_name *C.char, chart_
 		client.Version = chartVersion
 	}
 
-	// Locate and load the chart (supports local, OCI, and HTTP)
-	cp, err := client.ChartPathOptions.LocateChart(chartPath, state.envs)
-	if err != nil {
-		return setError(fmt.Errorf("failed to locate chart: %w", err))
-	}
-
-	// Load the chart from the located path
-	chart, err := loader.Load(cp)
+	// Load chart using diskless approach (works in read-only filesystem environments)
+	// For OCI and HTTP charts, this downloads directly to memory - no disk writes needed
+	loadedChart, err := loadChartDiskless(chartPath, chartVersion, state.cfg.RegistryClient, state.envs)
 	if err != nil {
 		return setError(fmt.Errorf("failed to load chart: %w", err))
 	}
@@ -336,7 +543,7 @@ func helm_sdkpy_upgrade(handle C.helm_sdkpy_handle, release_name *C.char, chart_
 	}
 
 	// Run the upgrade
-	rel, err := client.Run(releaseName, chart, values)
+	rel, err := client.Run(releaseName, loadedChart, values)
 	if err != nil {
 		return setError(fmt.Errorf("upgrade failed: %w", err))
 	}
