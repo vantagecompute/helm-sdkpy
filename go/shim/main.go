@@ -321,10 +321,22 @@ func loadChartFromRepo(chartRef string, version string, envs *cli.EnvSettings) (
 // Configuration management
 
 //export helm_sdkpy_config_create
-func helm_sdkpy_config_create(namespace *C.char, kubeconfig *C.char, kubecontext *C.char, handle_out *C.helm_sdkpy_handle) C.int {
+func helm_sdkpy_config_create(namespace *C.char, kubeconfig *C.char, kubecontext *C.char, options_json *C.char, handle_out *C.helm_sdkpy_handle) C.int {
 	ns := C.GoString(namespace)
 	kc := C.GoString(kubeconfig)
 	kctx := C.GoString(kubecontext)
+	optsJSON := C.GoString(options_json)
+
+	// Parse config options
+	var configOpts struct {
+		PlainHTTP            bool `json:"plain_http"`
+		InsecureSkipTLSVerify bool `json:"insecure_skip_tls_verify"`
+	}
+	if optsJSON != "" {
+		if err := json.Unmarshal([]byte(optsJSON), &configOpts); err != nil {
+			return setError(fmt.Errorf("failed to parse config options: %w", err))
+		}
+	}
 
 	var restClientGetter genericclioptions.RESTClientGetter
 	var envs *cli.EnvSettings
@@ -383,14 +395,21 @@ if cfg.KubeClient != nil {
 }
 
 // Initialize registry client for OCI operations
-registryClient, err := registry.NewClient(
-registry.ClientOptDebug(false),
-registry.ClientOptEnableCache(true),
-registry.ClientOptWriter(os.Stdout),
-registry.ClientOptCredentialsFile(envs.RegistryConfig),
-)
+registryOpts := []registry.ClientOption{
+	registry.ClientOptDebug(false),
+	registry.ClientOptEnableCache(true),
+	registry.ClientOptWriter(os.Stdout),
+	registry.ClientOptCredentialsFile(envs.RegistryConfig),
+}
+
+// Add PlainHTTP option for HTTP registries (e.g., local registries without TLS)
+if configOpts.PlainHTTP {
+	registryOpts = append(registryOpts, registry.ClientOptPlainHTTP())
+}
+
+registryClient, err := registry.NewClient(registryOpts...)
 if err != nil {
-return setError(fmt.Errorf("failed to initialize registry client: %w", err))
+	return setError(fmt.Errorf("failed to initialize registry client: %w", err))
 }
 cfg.RegistryClient = registryClient
 

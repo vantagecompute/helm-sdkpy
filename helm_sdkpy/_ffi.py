@@ -30,7 +30,7 @@ ffi.cdef(
     typedef unsigned long long helm_sdkpy_handle;
 
     // Configuration management
-    int helm_sdkpy_config_create(const char *namespace, const char *kubeconfig, const char *kubecontext, helm_sdkpy_handle *handle_out);
+    int helm_sdkpy_config_create(const char *namespace, const char *kubeconfig, const char *kubecontext, const char *options_json, helm_sdkpy_handle *handle_out);
     void helm_sdkpy_config_destroy(helm_sdkpy_handle handle);
 
     // Install action
