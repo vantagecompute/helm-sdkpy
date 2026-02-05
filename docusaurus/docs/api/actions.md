@@ -20,6 +20,9 @@ Args:
         - File path: Path to a kubeconfig file (e.g., "/path/to/config.yaml")
         - YAML string: Kubeconfig content as a YAML string (auto-detected)
     kubecontext: Kubernetes context to use (default: current context)
+    plain_http: Use HTTP instead of HTTPS for OCI registries (default: False).
+        Enable this when using local registries without TLS (e.g., MicroK8s registry).
+    insecure_skip_tls_verify: Skip TLS certificate verification (default: False)
 
 Example:
 
@@ -43,6 +46,12 @@ Example:
 >>>
 >>> install = Install(config)
 >>> result = asyncio.run(install.run("my-release", "/path/to/chart"))
+>>>
+>>> # Using a local HTTP registry (no TLS)
+>>> config = Configuration(
+...     namespace="default",
+...     plain_http=True  # For registries without TLS (e.g., local registries)
+... )
 ```
 
 ### Methods
