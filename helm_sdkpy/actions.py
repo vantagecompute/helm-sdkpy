@@ -192,6 +192,7 @@ class Install:
         create_namespace: bool = False,
         wait: bool = True,
         timeout: int = 300,
+        skip_schema_validation: bool = False,
     ) -> dict[str, Any]:
         """Install a chart asynchronously.
 
@@ -206,6 +207,8 @@ class Install:
             create_namespace: Create the release namespace if not present
             wait: Wait for all resources to be ready (default: True)
             timeout: Timeout in seconds for wait (default: 300)
+            skip_schema_validation: Skip JSON schema validation for chart values (default: False).
+                Useful for charts with strict/buggy schemas (e.g., Istio gateway chart).
 
         Returns:
             Dictionary containing release information
@@ -235,6 +238,7 @@ class Install:
                 1 if create_namespace else 0,
                 1 if wait else 0,
                 timeout,
+                1 if skip_schema_validation else 0,
                 result_json,
             )
 
