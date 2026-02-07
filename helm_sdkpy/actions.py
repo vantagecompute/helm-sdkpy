@@ -99,7 +99,9 @@ class Configuration:
         options_json = json.dumps(options)
         options_cstr = ffi.new("char[]", options_json.encode("utf-8"))
 
-        result = self._lib.helm_sdkpy_config_create(ns_cstr, kc_cstr, kctx_cstr, options_cstr, self._handle)
+        result = self._lib.helm_sdkpy_config_create(
+            ns_cstr, kc_cstr, kctx_cstr, options_cstr, self._handle
+        )
         check_error(result)
 
         self._handle_value = self._handle[0]
@@ -120,7 +122,7 @@ class Configuration:
 
     @classmethod
     def from_service_account(
-        cls, 
+        cls,
         namespace: str = "default",
         plain_http: bool = False,
         insecure_skip_tls_verify: bool = False,
@@ -156,8 +158,8 @@ class Configuration:
             ... )
         """
         return cls(
-            namespace=namespace, 
-            kubeconfig=None, 
+            namespace=namespace,
+            kubeconfig=None,
             kubecontext=None,
             plain_http=plain_http,
             insecure_skip_tls_verify=insecure_skip_tls_verify,

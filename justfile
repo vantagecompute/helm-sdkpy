@@ -123,3 +123,55 @@ docs-help:
     @echo "  docs-generate-api   - Generate API docs from SDK source"
     @echo "  docs-serve          - Serve built site"
     @echo "  docs-clean          - Clean build artifacts"
+
+# Release helm-sdkpy with a new version
+# Usage: just release 0.0.21
+[group("release")]
+release version:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    
+    echo "🔖 Releasing helm-sdkpy version {{version}}..."
+    
+    # Create release branch
+    echo "🌿 Creating release branch release/{{version}}..."
+    git checkout -b "release/{{version}}"
+    
+    # Bump pyproject.toml version
+    echo "📝 Updating pyproject.toml..."
+    sed -i 's/^version = ".*"/version = "{{version}}"/' pyproject.toml
+    
+    # Update docusaurus version.yml if it exists
+    if [ -f "docusaurus/data/version.yml" ]; then
+        echo "📝 Updating docusaurus/data/version.yml..."
+        sed -i 's/^version: .*/version: "{{version}}"/' docusaurus/data/version.yml
+    fi
+    
+    # Regenerate lock file
+    echo "🔒 Regenerating uv.lock..."
+    uv lock --no-cache
+    
+    # Commit changes
+    echo "📦 Committing version bump..."
+    git add pyproject.toml uv.lock
+    if [ -f "docusaurus/data/version.yml" ]; then
+        git add docusaurus/data/version.yml
+    fi
+    git commit -m "chore: bump version to {{version}}"
+    
+    # Push release branch
+    echo "🚀 Pushing release branch..."
+    git push origin "release/{{version}}"
+    sleep 1
+    
+    # Create tag
+    echo "🏷️ Creating tag..."
+    git tag -a "v{{version}}" -m "helm-sdkpy release version {{version}}"
+    
+    # Push tag
+    echo "🚀 Pushing tag..."
+    git push origin "v{{version}}"
+    
+    echo "✅ Released helm-sdkpy version {{version}}"
+    echo "   Branch: release/{{version}}"
+    echo "   Tag: v{{version}}"
