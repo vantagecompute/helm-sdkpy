@@ -441,7 +441,7 @@ func getConfig(handle C.helm_sdkpy_handle) (*configState, error) {
 // Install action
 
 //export helm_sdkpy_install
-func helm_sdkpy_install(handle C.helm_sdkpy_handle, release_name *C.char, chart_path *C.char, values_json *C.char, version *C.char, create_namespace C.int, wait C.int, timeout_seconds C.int, result_json **C.char) C.int {
+func helm_sdkpy_install(handle C.helm_sdkpy_handle, release_name *C.char, chart_path *C.char, values_json *C.char, version *C.char, create_namespace C.int, wait C.int, timeout_seconds C.int, skip_schema_validation C.int, result_json **C.char) C.int {
 	state, err := getConfig(handle)
 	if err != nil {
 		return setError(err)
@@ -468,6 +468,11 @@ func helm_sdkpy_install(handle C.helm_sdkpy_handle, release_name *C.char, chart_
 
 	// Disable OpenAPI validation as well
 	client.DisableOpenAPIValidation = true
+
+	// Skip JSON schema validation if requested (useful for charts with buggy schemas)
+	if skip_schema_validation != 0 {
+		client.SkipSchemaValidation = true
+	}
 
 	// Set version if provided
 	if chartVersion != "" {
