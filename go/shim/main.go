@@ -222,7 +222,17 @@ func loadChartFromOCI(chartRef string, version string, registryClient *registry.
 
 	// Build the full reference with version tag
 	ref := strings.TrimPrefix(chartRef, fmt.Sprintf("%s://", registry.OCIScheme))
-	if version != "" && !strings.Contains(ref, ":") {
+
+	// Check if the chart name (after the last /) already has a version tag
+	// We need to check only the chart name part, not the whole ref, because
+	// the registry URL may contain a port number (e.g., localhost:5001/chart)
+	// which would incorrectly match a simple Contains(ref, ":") check
+	lastSlash := strings.LastIndex(ref, "/")
+	chartName := ref
+	if lastSlash >= 0 {
+		chartName = ref[lastSlash+1:]
+	}
+	if version != "" && !strings.Contains(chartName, ":") {
 		ref = fmt.Sprintf("%s:%s", ref, version)
 	}
 
