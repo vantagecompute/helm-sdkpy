@@ -40,7 +40,7 @@ ffi.cdef(
     int helm_sdkpy_upgrade(helm_sdkpy_handle handle, const char *release_name, const char *chart_path, const char *values_json, const char *version, char **result_json);
 
     // Uninstall action
-    int helm_sdkpy_uninstall(helm_sdkpy_handle handle, const char *release_name, int wait, int timeout_seconds, int skip_schema_validation, char **result_json);
+    int helm_sdkpy_uninstall(helm_sdkpy_handle handle, const char *release_name, int wait, int timeout_seconds, char **result_json);
 
     // List action
     int helm_sdkpy_list(helm_sdkpy_handle handle, int all, char **result_json);
