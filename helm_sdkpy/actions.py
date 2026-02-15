@@ -376,7 +376,6 @@ class Uninstall:
                 name_cstr,
                 1 if wait else 0,
                 timeout,
-                0,  # skip_schema_validation - not needed for uninstall
                 result_json,
             )
 
