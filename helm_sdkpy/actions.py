@@ -372,7 +372,12 @@ class Uninstall:
             name_cstr = ffi.new("char[]", release_name.encode("utf-8"))
 
             result = self._lib.helm_sdkpy_uninstall(
-                self.config._handle_value, name_cstr, 1 if wait else 0, timeout, result_json
+                self.config._handle_value,
+                name_cstr,
+                1 if wait else 0,
+                timeout,
+                0,  # skip_schema_validation - not needed for uninstall
+                result_json,
             )
 
             if result != 0:
