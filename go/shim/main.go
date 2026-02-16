@@ -553,6 +553,10 @@ func helm_sdkpy_upgrade(handle C.helm_sdkpy_handle, release_name *C.char, chart_
 	client := action.NewUpgrade(state.cfg)
 	client.Namespace = state.envs.Namespace()
 
+	// Disable server-side apply to avoid field ownership conflicts
+	// Valid values: "auto", "true", "false"
+	client.ServerSideApply = "false"
+
 	// Set wait strategy
 	client.WaitStrategy = kube.HookOnlyStrategy
 
