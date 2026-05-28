@@ -498,7 +498,14 @@ func helm_sdkpy_install(handle C.helm_sdkpy_handle, release_name *C.char, chart_
 			client.Timeout = 5 * time.Minute // Default timeout
 		}
 	} else {
-		client.WaitStrategy = kube.HookOnlyStrategy // Only wait for hooks by default
+		client.WaitStrategy = kube.HookOnlyStrategy
+		// Hooks still need a timeout — a zero Timeout produces a zero-duration
+		// context in Helm v4, which can expire before hook resources are applied.
+		if timeout_seconds > 0 {
+			client.Timeout = time.Duration(timeout_seconds) * time.Second
+		} else {
+			client.Timeout = 10 * time.Minute
+		}
 	}
 
 	// Load chart using diskless approach (works in read-only filesystem environments)
@@ -557,8 +564,10 @@ func helm_sdkpy_upgrade(handle C.helm_sdkpy_handle, release_name *C.char, chart_
 	// Valid values: "auto", "true", "false"
 	client.ServerSideApply = "false"
 
-	// Set wait strategy
+	// Set wait strategy — hook-only but with a timeout so Helm v4 doesn't
+	// create a zero-duration context that expires before hook resources apply.
 	client.WaitStrategy = kube.HookOnlyStrategy
+	client.Timeout = 10 * time.Minute
 
 	// Set version if provided
 	if chartVersion != "" {
@@ -622,7 +631,12 @@ func helm_sdkpy_uninstall(handle C.helm_sdkpy_handle, release_name *C.char, wait
 			client.Timeout = 5 * time.Minute // Default timeout
 		}
 	} else {
-		client.WaitStrategy = kube.HookOnlyStrategy // Only wait for hooks by default
+		client.WaitStrategy = kube.HookOnlyStrategy
+		if timeout_seconds > 0 {
+			client.Timeout = time.Duration(timeout_seconds) * time.Second
+		} else {
+			client.Timeout = 10 * time.Minute
+		}
 	}
 
 	// Run the uninstall
