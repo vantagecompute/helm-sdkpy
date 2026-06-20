@@ -23,6 +23,10 @@ Args:
     plain_http: Use HTTP instead of HTTPS for OCI registries (default: False).
         Enable this when using local registries without TLS (e.g., MicroK8s registry).
     insecure_skip_tls_verify: Skip TLS certificate verification (default: False)
+    registry_auth: Optional host-keyed OCI registry credentials. Keys are registry
+        hostnames and values are mappings with ``username`` and ``password``.
+        These credentials are passed directly to Helm's in-memory registry client
+        and are not written to Helm's registry config file.
 
 Example:
 
