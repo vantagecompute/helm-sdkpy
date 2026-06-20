@@ -25,6 +25,7 @@ import "C"
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -47,6 +48,7 @@ import (
 	"helm.sh/helm/v4/pkg/repo/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/util/homedir"
+	"oras.land/oras-go/v2/registry/remote/auth"
 )
 
 // Configuration state
@@ -122,7 +124,7 @@ func ensureWritableHelmPaths() error {
 		// Try default path first
 		homeDir := homedir.HomeDir()
 		defaultCache := filepath.Join(homeDir, ".cache", "helm")
-		
+
 		// Test if we can write to the default location
 		if !isPathWritable(defaultCache) {
 			// Fall back to a temp directory
@@ -133,12 +135,12 @@ func ensureWritableHelmPaths() error {
 			os.Setenv("HELM_CACHE_HOME", tmpDir)
 		}
 	}
-	
+
 	// Check if HELM_CONFIG_HOME is already set
 	if os.Getenv("HELM_CONFIG_HOME") == "" {
 		homeDir := homedir.HomeDir()
 		defaultConfig := filepath.Join(homeDir, ".config", "helm")
-		
+
 		if !isPathWritable(defaultConfig) {
 			tmpDir := filepath.Join(os.TempDir(), "helm-sdkpy-config")
 			if err := os.MkdirAll(tmpDir, 0755); err != nil {
@@ -147,12 +149,12 @@ func ensureWritableHelmPaths() error {
 			os.Setenv("HELM_CONFIG_HOME", tmpDir)
 		}
 	}
-	
+
 	// Check if HELM_DATA_HOME is already set
 	if os.Getenv("HELM_DATA_HOME") == "" {
 		homeDir := homedir.HomeDir()
 		defaultData := filepath.Join(homeDir, ".local", "share", "helm")
-		
+
 		if !isPathWritable(defaultData) {
 			tmpDir := filepath.Join(os.TempDir(), "helm-sdkpy-data")
 			if err := os.MkdirAll(tmpDir, 0755); err != nil {
@@ -161,7 +163,7 @@ func ensureWritableHelmPaths() error {
 			os.Setenv("HELM_DATA_HOME", tmpDir)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -172,7 +174,7 @@ func isPathWritable(path string) bool {
 	if err := os.MkdirAll(path, 0755); err != nil {
 		return false
 	}
-	
+
 	// Try to create a test file
 	testFile := filepath.Join(path, ".helm-sdkpy-write-test")
 	f, err := os.Create(testFile)
@@ -181,7 +183,7 @@ func isPathWritable(path string) bool {
 	}
 	f.Close()
 	os.Remove(testFile)
-	
+
 	return true
 }
 
@@ -330,6 +332,50 @@ func loadChartFromRepo(chartRef string, version string, envs *cli.EnvSettings) (
 
 // Configuration management
 
+type registryAuthEntry struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type configCreateOptions struct {
+	PlainHTTP             bool                         `json:"plain_http"`
+	InsecureSkipTLSVerify bool                         `json:"insecure_skip_tls_verify"`
+	RegistryAuth          map[string]registryAuthEntry `json:"registry_auth"`
+}
+
+func normalizeRegistryAuthHost(host string) string {
+	normalized := strings.TrimSpace(host)
+	normalized = strings.TrimPrefix(normalized, fmt.Sprintf("%s://", registry.OCIScheme))
+	normalized = strings.TrimPrefix(normalized, "https://")
+	normalized = strings.TrimPrefix(normalized, "http://")
+	normalized = strings.TrimSuffix(normalized, "/")
+	if slash := strings.Index(normalized, "/"); slash >= 0 {
+		normalized = normalized[:slash]
+	}
+	return normalized
+}
+
+func registryAuthCredentialFunc(registryAuth map[string]registryAuthEntry) auth.CredentialFunc {
+	credentials := make(map[string]auth.Credential, len(registryAuth))
+	for host, entry := range registryAuth {
+		normalizedHost := normalizeRegistryAuthHost(host)
+		if normalizedHost == "" || entry.Username == "" {
+			continue
+		}
+		credentials[normalizedHost] = auth.Credential{
+			Username: entry.Username,
+			Password: entry.Password,
+		}
+	}
+
+	return func(_ context.Context, hostport string) (auth.Credential, error) {
+		if cred, ok := credentials[hostport]; ok {
+			return cred, nil
+		}
+		return auth.EmptyCredential, nil
+	}
+}
+
 //export helm_sdkpy_config_create
 func helm_sdkpy_config_create(namespace *C.char, kubeconfig *C.char, kubecontext *C.char, options_json *C.char, handle_out *C.helm_sdkpy_handle) C.int {
 	ns := C.GoString(namespace)
@@ -338,10 +384,7 @@ func helm_sdkpy_config_create(namespace *C.char, kubeconfig *C.char, kubecontext
 	optsJSON := C.GoString(options_json)
 
 	// Parse config options
-	var configOpts struct {
-		PlainHTTP            bool `json:"plain_http"`
-		InsecureSkipTLSVerify bool `json:"insecure_skip_tls_verify"`
-	}
+	var configOpts configCreateOptions
 	if optsJSON != "" {
 		if err := json.Unmarshal([]byte(optsJSON), &configOpts); err != nil {
 			return setError(fmt.Errorf("failed to parse config options: %w", err))
@@ -376,10 +419,10 @@ func helm_sdkpy_config_create(namespace *C.char, kubeconfig *C.char, kubecontext
 			}
 			restClientGetter = envs.RESTClientGetter()
 		}
-	// Priority 2: In-cluster ServiceAccount authentication
+		// Priority 2: In-cluster ServiceAccount authentication
 	} else if isRunningInCluster() {
 		restClientGetter = NewInClusterGetter(ns)
-	// Priority 3: Default kubeconfig ($KUBECONFIG or ~/.kube/config)
+		// Priority 3: Default kubeconfig ($KUBECONFIG or ~/.kube/config)
 	} else {
 		if kctx != "" {
 			envs.KubeContext = kctx
@@ -387,52 +430,59 @@ func helm_sdkpy_config_create(namespace *C.char, kubeconfig *C.char, kubecontext
 		restClientGetter = envs.RESTClientGetter()
 	}
 
-// Create action configuration
-cfg := new(action.Configuration)
+	// Create action configuration
+	cfg := new(action.Configuration)
 
-// Initialize the configuration with Kubernetes settings
-err := cfg.Init(restClientGetter, envs.Namespace(), os.Getenv("HELM_DRIVER"))
-if err != nil {
-return setError(fmt.Errorf("failed to initialize helm config: %w", err))
-}
+	// Initialize the configuration with Kubernetes settings
+	err := cfg.Init(restClientGetter, envs.Namespace(), os.Getenv("HELM_DRIVER"))
+	if err != nil {
+		return setError(fmt.Errorf("failed to initialize helm config: %w", err))
+	}
 
-// Configure the Kubernetes client to use Ignore field validation
-// This allows charts with managedFields in templates (like rook-ceph v1.18.x)
-// to install successfully without strict Kubernetes API validation errors
-if cfg.KubeClient != nil {
-// Note: In Helm v4, field validation is handled via client options during Create/Update
-// We'll configure this in the Install action instead
-}
+	// Configure the Kubernetes client to use Ignore field validation
+	// This allows charts with managedFields in templates (like rook-ceph v1.18.x)
+	// to install successfully without strict Kubernetes API validation errors
+	if cfg.KubeClient != nil {
+		// Note: In Helm v4, field validation is handled via client options during Create/Update
+		// We'll configure this in the Install action instead
+	}
 
-// Initialize registry client for OCI operations
-registryOpts := []registry.ClientOption{
-	registry.ClientOptDebug(false),
-	registry.ClientOptEnableCache(true),
-	registry.ClientOptWriter(os.Stdout),
-	registry.ClientOptCredentialsFile(envs.RegistryConfig),
-}
+	// Initialize registry client for OCI operations
+	registryOpts := []registry.ClientOption{
+		registry.ClientOptDebug(false),
+		registry.ClientOptEnableCache(true),
+		registry.ClientOptWriter(os.Stdout),
+		registry.ClientOptCredentialsFile(envs.RegistryConfig),
+	}
 
-// Add PlainHTTP option for HTTP registries (e.g., local registries without TLS)
-if configOpts.PlainHTTP {
-	registryOpts = append(registryOpts, registry.ClientOptPlainHTTP())
-}
+	// Add PlainHTTP option for HTTP registries (e.g., local registries without TLS)
+	if configOpts.PlainHTTP {
+		registryOpts = append(registryOpts, registry.ClientOptPlainHTTP())
+	}
 
-registryClient, err := registry.NewClient(registryOpts...)
-if err != nil {
-	return setError(fmt.Errorf("failed to initialize registry client: %w", err))
-}
-cfg.RegistryClient = registryClient
+	if len(configOpts.RegistryAuth) > 0 {
+		registryOpts = append(registryOpts, registry.ClientOptAuthorizer(auth.Client{
+			Credential: registryAuthCredentialFunc(configOpts.RegistryAuth),
+			Cache:      auth.NewCache(),
+		}))
+	}
 
-state := &configState{
-cfg:  cfg,
-envs: envs,
-}
+	registryClient, err := registry.NewClient(registryOpts...)
+	if err != nil {
+		return setError(fmt.Errorf("failed to initialize registry client: %w", err))
+	}
+	cfg.RegistryClient = registryClient
 
-handle := nextHandle()
-configs.Store(handle, state)
-*handle_out = handle
+	state := &configState{
+		cfg:  cfg,
+		envs: envs,
+	}
 
-return 0
+	handle := nextHandle()
+	configs.Store(handle, state)
+	*handle_out = handle
+
+	return 0
 }
 
 //export helm_sdkpy_config_destroy
