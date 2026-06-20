@@ -152,7 +152,7 @@ wheels = [
 
 [[package]]
 name = "helm-sdkpy"
-version = "0.0.28"
+version = "0.1.28"
 source = { editable = "." }
 dependencies = [
     { name = "cffi" },
