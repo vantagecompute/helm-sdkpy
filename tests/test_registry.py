@@ -1,10 +1,29 @@
 """Tests for registry operations."""
 
 import inspect
+import json
+from typing import Any
 
 import pytest
 
+import helm_sdkpy.actions as actions
 from helm_sdkpy import Configuration, Push, RegistryLogin, RegistryLogout
+from helm_sdkpy._ffi import ffi
+
+
+class _CapturingConfigLibrary:
+    def __init__(self) -> None:
+        self.options: dict[str, Any] = {}
+
+    def helm_sdkpy_config_create(
+        self, _namespace, _kubeconfig, _kubecontext, options_json, handle_out
+    ):
+        self.options = json.loads(ffi.string(options_json).decode())
+        handle_out[0] = 42
+        return 0
+
+    def helm_sdkpy_config_destroy(self, _handle) -> None:
+        return None
 
 
 class TestRegistryOperations:
@@ -97,6 +116,28 @@ class TestRegistryOperations:
         assert "ca_file" in params
         assert "insecure_skip_tls_verify" in params
         assert "plain_http" in params
+
+    def test_configuration_accepts_registry_auth(self, monkeypatch: pytest.MonkeyPatch):
+        """Test Configuration passes registry auth through options JSON."""
+        fake_library = _CapturingConfigLibrary()
+        monkeypatch.setattr(actions, "get_library", lambda: fake_library)
+
+        config = actions.Configuration(
+            registry_auth={
+                "registry.vantagecompute.ai": {
+                    "username": "client-id",
+                    "password": "client-secret",
+                }
+            }
+        )
+
+        assert config is not None
+        assert fake_library.options["registry_auth"] == {
+            "registry.vantagecompute.ai": {
+                "username": "client-id",
+                "password": "client-secret",
+            }
+        }
 
 
 if __name__ == "__main__":

@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from collections.abc import Mapping
 from typing import Any
 
 from ._ffi import check_error, ffi, get_library, string_from_c
@@ -46,6 +47,10 @@ class Configuration:
         plain_http: Use HTTP instead of HTTPS for OCI registries (default: False).
             Enable this when using local registries without TLS (e.g., MicroK8s registry).
         insecure_skip_tls_verify: Skip TLS certificate verification (default: False)
+        registry_auth: Optional host-keyed OCI registry credentials. Keys are registry
+            hostnames and values are mappings with ``username`` and ``password``.
+            These credentials are passed directly to Helm's in-memory registry client
+            and are not written to Helm's registry config file.
 
     Example:
         >>> import asyncio
@@ -82,6 +87,7 @@ class Configuration:
         kubecontext: str | None = None,
         plain_http: bool = False,
         insecure_skip_tls_verify: bool = False,
+        registry_auth: Mapping[str, Mapping[str, str]] | None = None,
     ):
         self._lib = get_library()
         self._handle = ffi.new("helm_sdkpy_handle *")
@@ -96,6 +102,14 @@ class Configuration:
             options["plain_http"] = plain_http
         if insecure_skip_tls_verify:
             options["insecure_skip_tls_verify"] = insecure_skip_tls_verify
+        if registry_auth:
+            options["registry_auth"] = {
+                host: {
+                    "username": credentials["username"],
+                    "password": credentials["password"],
+                }
+                for host, credentials in registry_auth.items()
+            }
         options_json = json.dumps(options)
         options_cstr = ffi.new("char[]", options_json.encode("utf-8"))
 
@@ -126,6 +140,7 @@ class Configuration:
         namespace: str = "default",
         plain_http: bool = False,
         insecure_skip_tls_verify: bool = False,
+        registry_auth: Mapping[str, Mapping[str, str]] | None = None,
     ) -> Configuration:
         """Create configuration using in-cluster ServiceAccount.
 
@@ -141,6 +156,7 @@ class Configuration:
             namespace: Kubernetes namespace to operate in (default: "default")
             plain_http: Use HTTP instead of HTTPS for OCI registries (default: False)
             insecure_skip_tls_verify: Skip TLS certificate verification (default: False)
+            registry_auth: Optional host-keyed OCI registry credentials.
 
         Returns:
             Configuration instance using ServiceAccount authentication
@@ -163,6 +179,7 @@ class Configuration:
             kubecontext=None,
             plain_http=plain_http,
             insecure_skip_tls_verify=insecure_skip_tls_verify,
+            registry_auth=registry_auth,
         )
 
 
